@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from 'express';
 import db from '../db/conn';
-import { PUBLIC_ROUTES } from './routes';
+import { PUBLIC_ROUTES } from './types.ts';
 
 const publicRouter = express.Router();
 
