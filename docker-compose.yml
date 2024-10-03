@@ -1,0 +1,11 @@
+services:
+  express-app:
+    container_name: ecomm-express-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    restart: always
+    ports:
+      - "8080:8080"
