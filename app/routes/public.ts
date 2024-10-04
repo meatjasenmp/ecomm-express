@@ -5,7 +5,7 @@ const publicRouter = express.Router();
 
 publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().limit(20);
     res.json(products).status(200);
   } catch (err) {
     res.status(400).send({
