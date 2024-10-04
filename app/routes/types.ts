@@ -3,7 +3,7 @@ const enum PUBLIC_ROUTES {
 }
 
 const enum ADMIN_ROUTES {
-  CREATE_PRODUCT = '/create-product',
+  CREATE_PRODUCTS = '/create-products',
 }
 
 export { PUBLIC_ROUTES, ADMIN_ROUTES };
