@@ -11,6 +11,6 @@ try {
   console.error(err);
 }
 
-const db = conn?.db(process.env.DB);
+const db = conn?.db();
 
 export default db;
