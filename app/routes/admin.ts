@@ -19,8 +19,9 @@ adminRouter.post('/create-products', async (_: Request<ProductInterface>, res: R
 adminRouter.patch(
   '/update-products/products/:id',
   async (req: Request<ProductRequest>, res: Response): Promise<void> => {
-    const { title, id } = req.params;
-    await Product.updateOne({ _id: id }, { title: title })
+    const { id, ...rest } = req.params;
+
+    await Product.updateOne({ _id: id }, rest)
       .then((product) => {
         res.json(product).status(200);
       })
