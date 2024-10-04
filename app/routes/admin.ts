@@ -3,7 +3,7 @@ import Product, { type ProductInterface, type ProductRequest } from '../db/model
 
 const adminRouter = express.Router();
 
-adminRouter.post('/create-products', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
+adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
   const product = new Product({
     title: req.body.title,
     description: req.body.description,
@@ -21,7 +21,7 @@ adminRouter.post('/create-products', async (req: Request<ProductInterface>, res:
 });
 
 adminRouter.patch(
-  '/update-products/products/:id',
+  '/update-product/products/:id',
   async (req: Request<ProductRequest>, res: Response): Promise<void> => {
     const { id, ...rest } = req.params;
 
@@ -31,6 +31,22 @@ adminRouter.patch(
     } catch (err) {
       res.status(400).send({
         message: 'Failed to update product',
+        error: err,
+      });
+    }
+  },
+);
+
+adminRouter.delete(
+  '/delete-product/products/:id',
+  async (req: Request<ProductRequest>, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    try {
+      await Product.deleteOne({ _id: id });
+    } catch (err) {
+      res.status(400).send({
+        message: 'Failed to delete product',
         error: err,
       });
     }

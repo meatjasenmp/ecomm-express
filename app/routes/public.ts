@@ -4,8 +4,15 @@ import Product from '../db/models/Product.ts';
 const publicRouter = express.Router();
 
 publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
-  const products = await Product.find();
-  res.json(products);
+  try {
+    const products = await Product.find();
+    res.json(products).status(200);
+  } catch (err) {
+    res.status(400).send({
+      message: 'Failed to fetch products',
+      error: err,
+    });
+  }
 });
 
 export default publicRouter;
