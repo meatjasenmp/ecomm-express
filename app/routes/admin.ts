@@ -4,11 +4,7 @@ import Product, { type ProductInterface, type ProductRequest } from '../db/model
 const adminRouter = express.Router();
 
 adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
-  const product = new Product({
-    title: req.body.title,
-    description: req.body.description,
-    isPublished: req.body.isPublished,
-  });
+  const product = new Product({ ...req.body });
 
   try {
     const savedProduct = await product.save();
@@ -38,20 +34,17 @@ adminRouter.patch(
   },
 );
 
-adminRouter.delete(
-  '/delete-product/products/:id',
-  async (req: Request<ProductRequest>, res: Response): Promise<void> => {
-    const { id } = req.params;
+adminRouter.delete('/delete-product/products/:id', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
 
-    try {
-      await Product.deleteOne({ _id: id });
-    } catch (err) {
-      res.status(400).send({
-        message: 'Failed to delete product',
-        error: err,
-      });
-    }
-  },
-);
+  try {
+    await Product.deleteOne({ _id: id });
+  } catch (err) {
+    res.status(400).send({
+      message: 'Failed to delete product',
+      error: err,
+    });
+  }
+});
 
 export default adminRouter;
