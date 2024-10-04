@@ -3,6 +3,6 @@ import publicRouter from './public';
 
 const router = express.Router();
 
-router.use(publicRouter);
+router.use([publicRouter]);
 
 export default router;
