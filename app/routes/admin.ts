@@ -7,6 +7,7 @@ adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: 
   const product = new Product({
     title: req.body.title,
     description: req.body.description,
+    isPublished: req.body.isPublished,
   });
 
   try {
@@ -23,10 +24,10 @@ adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: 
 adminRouter.patch(
   '/update-product/products/:id',
   async (req: Request<ProductRequest>, res: Response): Promise<void> => {
-    const { id, ...rest } = req.params;
+    const { id } = req.params;
 
     try {
-      const updatedProduct = await Product.updateOne({ _id: id, ...rest });
+      const updatedProduct = await Product.updateOne({ _id: id, ...req.body });
       res.json(updatedProduct).status(200);
     } catch (err) {
       res.status(400).send({

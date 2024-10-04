@@ -4,6 +4,7 @@ const { Schema, model } = mongoose;
 export interface ProductInterface {
   title: string;
   description: string;
+  isPublished: boolean;
 }
 
 export interface ProductRequest extends ProductInterface {
@@ -13,6 +14,7 @@ export interface ProductRequest extends ProductInterface {
 const productSchema = new Schema<ProductInterface>({
   title: { type: String, required: true },
   description: { type: String, required: true },
+  isPublished: { type: Boolean, required: true },
 });
 
 const Product = model('Product', productSchema);
