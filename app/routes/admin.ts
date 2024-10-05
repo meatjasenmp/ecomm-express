@@ -4,7 +4,7 @@ import Product, { type ProductInterface, type ProductRequest } from '../db/model
 const adminRouter = express.Router();
 
 adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
-  const product = new Product({ ...req.body });
+  const product = new Product(req.body);
 
   try {
     const savedProduct = await product.save();
@@ -23,7 +23,7 @@ adminRouter.patch(
     const { id } = req.params;
 
     try {
-      const updatedProduct = await Product.updateOne({ _id: id, ...req.body });
+      const updatedProduct = await Product.updateOne({ _id: id }, req.body);
       res.json(updatedProduct).status(200);
     } catch (err) {
       res.status(400).send({
