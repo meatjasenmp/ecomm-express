@@ -6,6 +6,10 @@ export interface CategoryInterface {
   description: string;
 }
 
+export interface CategoryRequest extends CategoryInterface {
+  id: string;
+}
+
 const categorySchema = new Schema<CategoryInterface>({
   name: { type: String, required: true },
   description: { type: String, required: true },

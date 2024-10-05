@@ -1,13 +1,14 @@
 import express, { type Request, type Response } from 'express';
+import { Document } from 'mongoose';
 import Product, { type ProductInterface, type ProductRequest } from '../db/models/Product';
 
-const adminRouter = express.Router();
+const productRoutes = express.Router();
 
-adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
+productRoutes.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
   const product = new Product(req.body);
 
   try {
-    const savedProduct = await product.save();
+    const savedProduct: Document = await product.save();
     res.json(savedProduct).status(201);
   } catch (err) {
     res.status(400).send({
@@ -17,7 +18,7 @@ adminRouter.post('/create-product', async (req: Request<ProductInterface>, res: 
   }
 });
 
-adminRouter.patch('/update-product/:id', async (req: Request<ProductRequest>, res: Response): Promise<void> => {
+productRoutes.patch('/update-product/:id', async (req: Request<ProductRequest>, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -32,7 +33,7 @@ adminRouter.patch('/update-product/:id', async (req: Request<ProductRequest>, re
   }
 });
 
-adminRouter.delete('/delete-product/:id', async (req: Request, res: Response): Promise<void> => {
+productRoutes.delete('/delete-product/:id', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -46,4 +47,4 @@ adminRouter.delete('/delete-product/:id', async (req: Request, res: Response): P
   }
 });
 
-export default adminRouter;
+export default productRoutes;
