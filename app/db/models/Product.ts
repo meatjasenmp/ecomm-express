@@ -6,7 +6,7 @@ export interface ProductInterface {
   description: string;
   price: number;
   category_ids: string[];
-  image_urls: string[];
+  image_ids: string[];
   discount?: number;
   isPublished: boolean;
 }
@@ -20,7 +20,7 @@ const productSchema = new Schema<ProductInterface>({
   description: { type: String, required: true },
   price: { type: Number, required: true },
   category_ids: { type: [String], required: true },
-  image_urls: { type: [String], required: true },
+  image_ids: { type: [String], required: true },
   discount: { type: Number },
   isPublished: { type: Boolean, required: true },
 });
