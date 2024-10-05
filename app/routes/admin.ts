@@ -21,7 +21,8 @@ adminRouter.patch('/update-product/:id', async (req: Request<ProductRequest>, re
   const { id } = req.params;
 
   try {
-    const updatedProduct = await Product.updateOne({ _id: id }, req.body);
+    await Product.updateOne({ _id: id }, req.body);
+    const updatedProduct = await Product.findById(id);
     res.json(updatedProduct).status(200);
   } catch (err) {
     res.status(400).send({
@@ -35,7 +36,8 @@ adminRouter.delete('/delete-product/:id', async (req: Request, res: Response): P
   const { id } = req.params;
 
   try {
-    await Product.deleteOne({ _id: id });
+    const deletedProduct = await Product.deleteOne({ _id: id });
+    res.json(deletedProduct).status(200);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to delete product',

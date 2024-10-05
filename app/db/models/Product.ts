@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 export interface ProductInterface {
-  title: string;
+  title?: string;
   description: string;
   price: number;
   category_ids: string[];
