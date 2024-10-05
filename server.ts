@@ -1,6 +1,5 @@
 import express, { type Express } from 'express';
 import mongoose from 'mongoose';
-import './loadEnvironment.ts';
 import router from './app/routes/app.routes';
 
 const app: Express = express();
