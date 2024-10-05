@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 export interface CategoryInterface {
+  _id?: string;
   name: string;
   description: string;
 }

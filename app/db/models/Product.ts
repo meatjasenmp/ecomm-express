@@ -3,7 +3,8 @@ const { Schema, model } = mongoose;
 import { type ImageInterface, imageSchema } from './Images.ts';
 
 export interface ProductInterface {
-  title?: string;
+  _id?: string;
+  title: string;
   description: string;
   price: number;
   category_ids: string[];
