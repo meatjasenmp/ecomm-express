@@ -1,11 +1,12 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 const { Schema, model } = mongoose;
 import { type ImageInterface, imageSchema } from './Images.ts';
 
 export interface ProductInterface {
-  _id?: string;
+  _id?: Types.ObjectId;
   title: string;
   description: string;
+  shortDescription: string;
   price: number;
   category_ids: string[];
   images: ImageInterface[];
@@ -20,6 +21,7 @@ export interface ProductRequest extends ProductInterface {
 const productSchema = new Schema<ProductInterface>({
   title: { type: String, required: true },
   description: { type: String, required: true },
+  shortDescription: { type: String, required: true },
   price: { type: Number, required: true },
   category_ids: { type: [String], required: true },
   images: { type: [imageSchema], required: true },
