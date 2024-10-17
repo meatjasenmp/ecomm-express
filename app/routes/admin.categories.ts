@@ -3,6 +3,18 @@ import Category, { type CategoryInterface, type CategoryRequest } from '../db/mo
 
 const categoryRoutes = express.Router();
 
+categoryRoutes.get('/categories', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const categories: CategoryInterface[] = await Category.find();
+    res.json(categories).status(200);
+  } catch (err) {
+    res.status(400).send({
+      message: 'Failed to fetch categories',
+      error: err,
+    });
+  }
+});
+
 categoryRoutes.post('/create-category', async (req: Request<CategoryInterface>, res: Response): Promise<void> => {
   const category = new Category(req.body);
 
