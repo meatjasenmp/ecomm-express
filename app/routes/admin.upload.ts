@@ -4,7 +4,7 @@ import multerS3 from 'multer-s3';
 import { S3Client } from '@aws-sdk/client-s3';
 
 const s3Client = new S3Client({
-  region: 'us-east-1', // Replace with your preferred region
+  region: 'us-east-1',
   credentials: {
     accessKeyId: 'YOUR_ACCESS_KEY_ID',
     secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
