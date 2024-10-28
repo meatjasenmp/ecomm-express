@@ -1,5 +1,5 @@
 import express, { type Request, type Response } from 'express';
-import Product, { type ProductInterface, type ProductRequest } from '../db/models/Product';
+import Product, { type ProductInterface, type ProductRequest } from '../db/models/Products.ts';
 
 const productRoutes = express.Router();
 
