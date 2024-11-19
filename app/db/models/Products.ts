@@ -23,10 +23,10 @@ const productSchema = new Schema<ProductInterface>({
   description: { type: String, required: true },
   shortDescription: { type: String, required: true },
   price: { type: Number, required: true },
-  category_ids: { type: [String], required: true },
-  images: { type: [imageSchema], required: true },
+  category_ids: { type: [String] },
+  images: { type: [imageSchema] },
   discount: { type: Number },
-  isPublished: { type: Boolean, required: true },
+  isPublished: { type: Boolean },
 });
 
 const Product = model('Product', productSchema);
