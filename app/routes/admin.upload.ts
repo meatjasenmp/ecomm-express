@@ -4,17 +4,17 @@ import multerS3 from 'multer-s3';
 import { S3Client } from '@aws-sdk/client-s3';
 
 const s3Client = new S3Client({
-  region: 'us-east-1',
+  region: 'us-east-2',
   credentials: {
-    accessKeyId: 'YOUR_ACCESS_KEY_ID',
-    secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
+    accessKeyId: process.env.AWS_ACCESS_KEY || '',
+    secretAccessKey: process.env.AWS_SECRET || '',
   },
 });
 
 const upload = multer({
   storage: multerS3({
     s3: s3Client,
-    bucket: 'your-s3-bucket-name',
+    bucket: 'nikeknockoff',
     acl: 'public-read', // Make the uploaded file public
     key: function (_req, file, cb) {
       cb(null, Date.now().toString() + '-' + file.originalname);
