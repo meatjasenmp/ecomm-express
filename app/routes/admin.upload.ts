@@ -1,26 +1,6 @@
 import express, { type Request, type Response } from 'express';
-import multer from 'multer';
-import multerS3 from 'multer-s3';
-import { S3Client } from '@aws-sdk/client-s3';
 
-const s3Client = new S3Client({
-  region: 'us-east-2',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY || '',
-    secretAccessKey: process.env.AWS_SECRET || '',
-  },
-});
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: 'nikeknockoff',
-    acl: 'public-read', // Make the uploaded file public
-    key: function (_req, file, cb) {
-      cb(null, Date.now().toString() + '-' + file.originalname);
-    },
-  }),
-});
+import upload from '../helpers/s3';
 
 const uploadRoutes = express.Router();
 
