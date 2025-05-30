@@ -25,10 +25,13 @@ const s3 = new S3Client({
 
 const s3Storage = multerS3({
   s3,
-  bucket: 'nikeknockoff',
-  acl: 'public-read', // Make the uploaded file public
+  bucket: process.env.AWS_BUCKET || '',
+  acl: 'public-read',
+  metadata: function (req, file, cb) {
+    cb(null, { fieldName: file.fieldname });
+  },
   key: function (_req, file, cb) {
-    cb(null, Date.now().toString() + '-' + file.originalname);
+    cb(null, `uploads/${Date.now()}_${file.originalname}`);
   },
 });
 

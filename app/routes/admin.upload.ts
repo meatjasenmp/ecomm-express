@@ -1,23 +1,22 @@
 import express, { type Request, type Response } from 'express';
+import Image from '../db/models/Images';
 
 import upload from '../helpers/s3';
 
 const uploadRoutes = express.Router();
 
-uploadRoutes.put('/upload-image', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
+const imageUpload = async (req: Request, res: Response): Promise<void> => {
+  console.info('image', req.file);
   try {
-    const file = req.file as Express.MulterS3.File;
-    console.info('File:', file);
-    res.json({ message: 'Image uploaded successfully' }).status(201);
+    const { originalname, location, key } = req.file as Express.MulterS3.File;
+    const image = new Image({ name: originalname, url: location, key });
+    await image.save();
+    res.status(200).json({ message: 'Image uploaded successfully', image });
   } catch (err) {
-    res.status(400).send({ message: 'Failed to upload image', error: err });
+    res.status(500).json({ error: 'Error uploading image' });
   }
-});
+};
 
-uploadRoutes.put('/upload-video', upload.single('video'), async (_req: Request, res: Response): Promise<void> => {
-  try {
-    res.json({ message: 'Video uploaded successfully' }).status(201);
-  } catch (err) {
-    res.status(400).send({ message: 'Failed to upload video', error: err });
-  }
-});
+uploadRoutes.post('/upload-images', upload.single('images'), imageUpload);
+
+export default uploadRoutes;
