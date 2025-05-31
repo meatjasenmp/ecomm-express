@@ -1,17 +1,18 @@
 import mongoose, { Types } from 'mongoose';
 const { Schema, model } = mongoose;
+import Image, { type ImageInterface } from './Images';
 
-export interface ProductInterface {
+export type ProductInterface = {
   _id?: Types.ObjectId;
   title: string;
   description: string;
   shortDescription: string;
   price: number;
   categories: string[];
-  images: string[];
+  images: ImageInterface[];
   discount?: number;
   isPublished: boolean;
-}
+};
 
 export interface ProductRequest extends ProductInterface {
   id: string;
@@ -23,7 +24,7 @@ const productSchema = new Schema<ProductInterface>({
   shortDescription: { type: String, required: true },
   price: { type: Number, required: true },
   categories: { type: [String], required: true },
-  images: { type: [String], required: true },
+  images: { type: [Image.schema], required: true },
   discount: { type: Number },
   isPublished: { type: Boolean },
 });

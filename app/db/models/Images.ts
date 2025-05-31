@@ -1,14 +1,14 @@
 import mongoose, { Types } from 'mongoose';
 const { Schema, model } = mongoose;
 
-export interface ImageInterface {
+export type ImageInterface = {
   name: string;
   url: string;
   key: string;
   createdAt: { type: Date };
   isPrimary?: boolean;
   _id?: Types.ObjectId;
-}
+};
 
 export const imageSchema = new Schema<ImageInterface>({
   name: { type: String, required: true },

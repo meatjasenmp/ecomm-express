@@ -10,8 +10,8 @@ const imageUpload = async (req: Request, res: Response): Promise<void> => {
   try {
     const { originalname, location, key } = req.file as Express.MulterS3.File;
     const image = new Image({ name: originalname, url: location, key });
-    await image.save();
-    res.status(200).json({ message: 'Image uploaded successfully', image });
+    const savedImage = await image.save();
+    res.send(savedImage).status(201);
   } catch (err) {
     res.status(500).json({ error: 'Error uploading image' });
   }

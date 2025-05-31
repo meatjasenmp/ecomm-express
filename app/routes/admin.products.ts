@@ -7,6 +7,7 @@ productRoutes.post('/create-product', async (req: Request<ProductInterface>, res
   const product = new Product(req.body);
   try {
     const savedProduct: ProductInterface = await product.save();
+    console.info('Product created:', savedProduct);
     res.json(savedProduct).status(201);
   } catch (err) {
     res.status(400).send({ message: 'Failed to create product', error: err });
