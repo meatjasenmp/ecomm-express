@@ -15,4 +15,16 @@ publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
   }
 });
 
+publicRouter.get('/get-product', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const product = await Product.findById(req.body.id);
+    res.json(product).status(200);
+  } catch (err) {
+    res.status(400).send({
+      message: 'Failed to fetch product',
+      error: err,
+    });
+  }
+});
+
 export default publicRouter;
