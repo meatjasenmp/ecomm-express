@@ -15,7 +15,7 @@ publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
   }
 });
 
-publicRouter.get('/get-product/:id', async (req: Request, res: Response): Promise<void> => {
+publicRouter.get('/product/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const product = await Product.findById(req.params.id);
     res.json(product).status(200);
