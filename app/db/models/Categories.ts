@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 const { Schema, model } = mongoose;
 
 export interface CategoryInterface {
-  _id?: string;
+  _id?: Types.ObjectId;
   name: string;
   description: string;
 }

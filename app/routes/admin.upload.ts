@@ -6,7 +6,6 @@ import upload from '../helpers/s3';
 const uploadRoutes = express.Router();
 
 const imageUpload = async (req: Request, res: Response): Promise<void> => {
-  console.info('image', req.file);
   try {
     const { originalname, location, key } = req.file as Express.MulterS3.File;
     const image = new Image({ name: originalname, url: location, key });

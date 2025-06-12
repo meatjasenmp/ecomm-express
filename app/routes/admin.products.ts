@@ -4,12 +4,14 @@ import Product, { type ProductInterface, type ProductRequest } from '../db/model
 const productRoutes = express.Router();
 
 productRoutes.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
+  console.info('Creating product with data:', req.body);
   const product = new Product(req.body);
   try {
     const savedProduct: ProductInterface = await product.save();
     console.info('Product created:', savedProduct);
     res.json(savedProduct).status(201);
   } catch (err) {
+    console.error('Error creating product:', err);
     res.status(400).send({ message: 'Failed to create product', error: err });
   }
 });
