@@ -4,31 +4,25 @@ import upload from '../helpers/s3';
 
 const uploadRoutes = express.Router();
 
+const uploadError = (err: Error, res: Response): void => {
+  console.error('Upload error:', err);
+  res.status(500).json({ error: 'Error uploading file' });
+};
+
+const createImages = async (files: Express.MulterS3.File[], res: Response): Promise<void> => {
+  const images = await Image.insertMany(files.map((i) => ({ name: i.originalname, url: i.location, key: i.key })));
+  res.status(201).json(images);
+};
+
 const imageUpload = async (req: Request, res: Response): Promise<void> => {
   try {
     const images = req.files as Express.MulterS3.File[];
-    if (!images || images.length === 0) {
-      res.status(400).json({ error: 'No images uploaded' });
-      return;
-    }
-    const urls = images.map((image) => ({
-      url: image.location,
-      key: image.key,
-    }));
-    const savedImages = await Image.insertMany(
-      urls.map((image) => ({
-        name: image.key,
-        url: image.url,
-        key: image.key,
-      })),
-    );
-
-    res.status(201).json(savedImages);
+    if (!images || images.length === 0) return uploadError(new Error('No images uploaded'), res);
+    await createImages(images, res);
   } catch (err) {
-    res.status(500).json({ error: 'Error uploading image' });
+    uploadError(err as Error, res);
   }
 };
 
-// Will need to update the multer upload to handle multiple files
 uploadRoutes.post('/upload-images', upload.array('images'), imageUpload);
 export default uploadRoutes;
