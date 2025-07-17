@@ -1,11 +1,15 @@
 import express, { type Request, type Response } from 'express';
-import Product, { type ProductInterface, type ProductRequest } from '../db/models/Products.ts';
+import Product, { type ProductInterface } from '../db/models/Products.ts';
+import { validate, validateParams } from '../middleware/validation.ts';
+import { ProductSchema, ProductUpdateSchema, IdParamsSchema } from '../validation/schemas.ts';
+import type { ProductInput, ProductUpdateInput } from '../validation/schemas.ts';
 
 const productRoutes = express.Router();
 
-productRoutes.post('/create-product', async (req: Request<ProductInterface>, res: Response): Promise<void> => {
-  console.info('Creating product with data:', req.body);
-  const product = new Product(req.body);
+productRoutes.post('/create-product', validate(ProductSchema), async (req: Request, res: Response): Promise<void> => {
+  const productData: ProductInput = req.body;
+  console.info('Creating product with data:', productData);
+  const product = new Product(productData);
   try {
     const savedProduct: ProductInterface = await product.save();
     console.info('Product created:', savedProduct);
@@ -16,10 +20,11 @@ productRoutes.post('/create-product', async (req: Request<ProductInterface>, res
   }
 });
 
-productRoutes.patch('/update-product/:id', async (req: Request<ProductRequest>, res: Response): Promise<void> => {
+productRoutes.patch('/update-product/:id', validateParams(IdParamsSchema), validate(ProductUpdateSchema), async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
+  const updateData: ProductUpdateInput = req.body;
   try {
-    await Product.updateOne({ _id: id }, req.body);
+    await Product.updateOne({ _id: id }, updateData);
     const updatedProduct: ProductInterface | null = await Product.findById(id);
     res.status(200).json(updatedProduct);
   } catch (err) {
@@ -27,7 +32,7 @@ productRoutes.patch('/update-product/:id', async (req: Request<ProductRequest>, 
   }
 });
 
-productRoutes.delete('/delete-product/:id', async (req: Request, res: Response): Promise<void> => {
+productRoutes.delete('/delete-product/:id', validateParams(IdParamsSchema), async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   try {
     const deletedProduct = await Product.deleteOne({ _id: id });

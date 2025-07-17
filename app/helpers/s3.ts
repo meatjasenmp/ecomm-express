@@ -24,7 +24,8 @@ const s3 = new S3Client({
 });
 
 const s3Storage = multerS3({
-  s3,
+  // Type assertion needed due to AWS SDK v3 compatibility with multer-s3 types
+  s3: s3 as never,
   bucket: process.env.AWS_BUCKET || '',
   acl: 'public-read',
   metadata: function (req, file, cb) {

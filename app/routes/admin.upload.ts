@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import Image from '../db/models/Images';
 import upload from '../helpers/s3';
+import type { ImageInput } from '../validation/schemas.ts';
 
 const uploadRoutes = express.Router();
 
@@ -10,7 +11,12 @@ const uploadError = (err: Error, res: Response): void => {
 };
 
 const createImages = async (files: Express.MulterS3.File[], res: Response): Promise<void> => {
-  const images = await Image.insertMany(files.map((i) => ({ name: i.originalname, url: i.location, key: i.key })));
+  const imageData: ImageInput[] = files.map((i) => ({
+    name: i.originalname,
+    url: i.location,
+    key: i.key,
+  }));
+  const images = await Image.insertMany(imageData);
   res.status(201).json(images);
 };
 
