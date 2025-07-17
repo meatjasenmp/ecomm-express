@@ -15,10 +15,6 @@ export type ProductInterface = {
   isPublished: boolean;
 };
 
-export interface ProductRequest extends ProductInterface {
-  id: string;
-}
-
 const productSchema = new Schema<ProductInterface>({
   title: { type: String, required: true },
   description: { type: String, required: true },
