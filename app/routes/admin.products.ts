@@ -9,7 +9,7 @@ productRoutes.post('/create-product', async (req: Request<ProductInterface>, res
   try {
     const savedProduct: ProductInterface = await product.save();
     console.info('Product created:', savedProduct);
-    res.json(savedProduct).status(201);
+    res.status(201).json(savedProduct);
   } catch (err) {
     console.error('Error creating product:', err);
     res.status(400).send({ message: 'Failed to create product', error: err });
@@ -21,7 +21,7 @@ productRoutes.patch('/update-product/:id', async (req: Request<ProductRequest>, 
   try {
     await Product.updateOne({ _id: id }, req.body);
     const updatedProduct: ProductInterface | null = await Product.findById(id);
-    res.json(updatedProduct).status(200);
+    res.status(200).json(updatedProduct);
   } catch (err) {
     res.status(400).send({ message: 'Failed to update product', error: err });
   }
@@ -31,7 +31,7 @@ productRoutes.delete('/delete-product/:id', async (req: Request, res: Response):
   const { id } = req.params;
   try {
     const deletedProduct = await Product.deleteOne({ _id: id });
-    res.json(deletedProduct).status(200);
+    res.status(200).json(deletedProduct);
   } catch (err) {
     res.status(400).send({ message: 'Failed to delete product', error: err });
   }

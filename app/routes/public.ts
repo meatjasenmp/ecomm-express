@@ -6,7 +6,7 @@ const publicRouter = express.Router();
 publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
   try {
     const products = await Product.find().limit(20);
-    res.json(products).status(200);
+    res.status(200).json(products);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to fetch products',
@@ -18,7 +18,7 @@ publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
 publicRouter.get('/product/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const product = await Product.findById(req.params.id);
-    res.json(product).status(200);
+    res.status(200).json(product);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to fetch product',

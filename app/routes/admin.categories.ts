@@ -6,7 +6,7 @@ const categoryRoutes = express.Router();
 categoryRoutes.get('/categories', async (_req: Request, res: Response): Promise<void> => {
   try {
     const categories: CategoryInterface[] = await Category.find();
-    res.json(categories).status(200);
+    res.status(200).json(categories);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to fetch categories',
@@ -20,7 +20,7 @@ categoryRoutes.post('/create-category', async (req: Request<CategoryInterface>, 
 
   try {
     const savedCategory: CategoryInterface = await category.save();
-    res.json(savedCategory).status(201);
+    res.status(201).json(savedCategory);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to create category',
@@ -35,7 +35,7 @@ categoryRoutes.patch('/update-category/:id', async (req: Request<CategoryRequest
   try {
     await Category.updateOne({ _id: id }, req.body);
     const updateCategory: CategoryInterface | null = await Category.findById(id);
-    res.json(updateCategory).status(200);
+    res.status(200).json(updateCategory);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to update category',
@@ -49,7 +49,7 @@ categoryRoutes.delete('/delete-category/:id', async (req: Request, res: Response
 
   try {
     const deletedCategory = await Category.deleteOne({ _id: id });
-    res.json(deletedCategory).status(200);
+    res.status(200).json(deletedCategory);
   } catch (err) {
     res.status(400).send({
       message: 'Failed to delete category',
