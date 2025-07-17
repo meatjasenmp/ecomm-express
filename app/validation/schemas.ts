@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid ObjectId format');
+
 export const CategorySchema = z.object({
   name: z.string().min(1, 'Category name is required').max(100, 'Category name must be less than 100 characters'),
   description: z.string().min(1, 'Description is required').max(500, 'Description must be less than 500 characters'),
@@ -33,8 +35,8 @@ export const ProductSchema = z.object({
     .min(1, 'Short description is required')
     .max(300, 'Short description must be less than 300 characters'),
   price: z.number().min(0, 'Price must be a positive number'),
-  categories: z.array(CategorySchema).min(1, 'At least one category is required'),
-  images: z.array(ImageSchema).min(1, 'At least one image is required'),
+  categories: z.array(ObjectIdSchema).min(1, 'At least one category is required'),
+  images: z.array(ObjectIdSchema).min(1, 'At least one image is required'),
   discount: z.number().min(0, 'Discount must be a positive number').max(100, 'Discount cannot exceed 100%').optional(),
   isPublished: z.boolean().optional(),
 });
@@ -52,13 +54,11 @@ export const ProductUpdateSchema = z.object({
     .max(300, 'Short description must be less than 300 characters')
     .optional(),
   price: z.number().min(0, 'Price must be a positive number').optional(),
-  categories: z.array(CategorySchema).min(1, 'At least one category is required').optional(),
-  images: z.array(ImageSchema).min(1, 'At least one image is required').optional(),
+  categories: z.array(ObjectIdSchema).min(1, 'At least one category is required').optional(),
+  images: z.array(ObjectIdSchema).min(1, 'At least one image is required').optional(),
   discount: z.number().min(0, 'Discount must be a positive number').max(100, 'Discount cannot exceed 100%').optional(),
   isPublished: z.boolean().optional(),
 });
-
-export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid ObjectId format');
 
 export const IdParamsSchema = z.object({
   id: ObjectIdSchema,

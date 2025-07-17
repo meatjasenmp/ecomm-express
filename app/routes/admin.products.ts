@@ -11,7 +11,8 @@ productRoutes.post('/create-product', validate(ProductSchema), async (req: Reque
   const product = new Product(productData);
   try {
     const savedProduct: ProductInterface = await product.save();
-    res.status(201).json(savedProduct);
+    const populatedProduct = await Product.findById(savedProduct._id).populate('categories').populate('images');
+    res.status(201).json(populatedProduct);
   } catch (err) {
     console.error('Error creating product:', err);
     res.status(400).send({ message: 'Failed to create product', error: err });
@@ -27,7 +28,7 @@ productRoutes.patch(
     const updateData: ProductUpdateInput = req.body;
     try {
       await Product.updateOne({ _id: id }, updateData);
-      const updatedProduct: ProductInterface | null = await Product.findById(id);
+      const updatedProduct: ProductInterface | null = await Product.findById(id).populate('categories').populate('images');
       res.status(200).json(updatedProduct);
     } catch (err) {
       res.status(400).send({ message: 'Failed to update product', error: err });

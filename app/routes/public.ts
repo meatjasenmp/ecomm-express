@@ -5,7 +5,7 @@ const publicRouter = express.Router();
 
 publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
   try {
-    const products = await Product.find().limit(20);
+    const products = await Product.find().populate('categories').populate('images').limit(20);
     res.status(200).json(products);
   } catch (err) {
     res.status(400).send({
@@ -17,7 +17,7 @@ publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
 
 publicRouter.get('/product/:id', async (req: Request, res: Response): Promise<void> => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate('categories').populate('images');
     res.status(200).json(product);
   } catch (err) {
     res.status(400).send({

@@ -1,7 +1,5 @@
 import mongoose, { Types } from 'mongoose';
 const { Schema, model } = mongoose;
-import Image, { type ImageInterface } from './Images';
-import Category, { type CategoryInterface } from './Categories';
 
 export type ProductInterface = {
   _id?: Types.ObjectId;
@@ -9,8 +7,8 @@ export type ProductInterface = {
   description: string;
   shortDescription: string;
   price: number;
-  categories: CategoryInterface[];
-  images: ImageInterface[];
+  categories: Types.ObjectId[];
+  images: Types.ObjectId[];
   discount?: number;
   isPublished: boolean;
 };
@@ -20,8 +18,8 @@ const productSchema = new Schema<ProductInterface>({
   description: { type: String, required: true },
   shortDescription: { type: String, required: true },
   price: { type: Number, required: true },
-  categories: { type: [Category.schema], required: true },
-  images: { type: [Image.schema], required: true },
+  categories: { type: [Schema.Types.ObjectId], ref: 'Category', required: true },
+  images: { type: [Schema.Types.ObjectId], ref: 'Image', required: true },
   discount: { type: Number },
   isPublished: { type: Boolean },
 });
