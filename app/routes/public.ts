@@ -3,7 +3,7 @@ import Product from '../db/models/Products.ts';
 
 const publicRouter = express.Router();
 
-publicRouter.get('/', async (_: Request, res: Response): Promise<void> => {
+publicRouter.get('/products', async (_: Request, res: Response): Promise<void> => {
   try {
     const products = await Product.find().populate('categories').populate('images').limit(20);
     res.status(200).json(products);
