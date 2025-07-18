@@ -24,7 +24,6 @@ export const ImageSchema = z.object({
   name: z.string().min(1, 'Image name is required'),
   url: z.string().url('Invalid URL format'),
   key: z.string().min(1, 'Image key is required'),
-  isPrimary: z.boolean().optional(),
 });
 
 export const ProductSchema = z.object({
