@@ -5,7 +5,7 @@ import router from './app/routes/app.routes';
 
 const app: Express = express();
 const connectionString = process.env.ATLAS_URI || '';
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
