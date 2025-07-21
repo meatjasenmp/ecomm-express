@@ -19,7 +19,7 @@ const productSchema = new Schema<ProductInterface>({
   shortDescription: { type: String, required: true },
   price: { type: Number, required: true },
   categories: { type: [Schema.Types.ObjectId], ref: 'Category', required: true },
-  images: { type: [Schema.Types.ObjectId], ref: 'Image', required: true },
+  images: { type: [Schema.Types.ObjectId], ref: 'Image' },
   discount: { type: Number },
   isPublished: { type: Boolean },
 });

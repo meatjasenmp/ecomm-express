@@ -7,7 +7,7 @@ const uploadRoutes = express.Router();
 
 const uploadError = (err: Error, res: Response): void => {
   console.error('Upload error:', err);
-  res.status(500).json({ error: 'Error uploading file' });
+  res.status(500).json({ error: 'Error uploading images' });
 };
 
 const createImages = async (files: Express.MulterS3.File[], res: Response): Promise<void> => {
@@ -23,7 +23,10 @@ const createImages = async (files: Express.MulterS3.File[], res: Response): Prom
 const imageUpload = async (req: Request, res: Response): Promise<void> => {
   try {
     const images = req.files as Express.MulterS3.File[];
-    if (!images || images.length === 0) return uploadError(new Error('No images uploaded'), res);
+    if (!images || images.length === 0) {
+      res.status(200).json([]);
+      return;
+    }
     await createImages(images, res);
   } catch (err) {
     uploadError(err as Error, res);
