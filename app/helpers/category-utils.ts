@@ -6,7 +6,6 @@ type CategoryTreeNode = CategoryInterface & {
   children: CategoryTreeNode[];
 };
 
-// Custom error classes for better error handling
 export class CategoryError extends Error {
   constructor(message: string) {
     super(message);
@@ -59,7 +58,6 @@ export async function generateAncestors(parentId: string | null): Promise<string
     throw new CategoryNotFoundError(parentId);
   }
 
-  // Parent's ancestors + parent's path = this category's ancestors
   return [...parent.ancestors, parent.path];
 }
 
@@ -70,10 +68,8 @@ export async function generateAncestors(parentId: string | null): Promise<string
 export async function generateCategoryPath(name: string, parentId: string | null): Promise<string> {
   const slug = createSlug(name);
 
-  // If no parent, this is a root level category
   if (!parentId) return slug;
 
-  // Find parent category efficiently (only fetch needed fields)
   const parent = await Category.findById(parentId, 'path level').lean();
   if (!parent) throw new CategoryNotFoundError(parentId);
 
@@ -92,7 +88,6 @@ export async function updateDescendantPaths(categoryId: string, newPath: string)
 
   const oldPath = category.path;
 
-  // Find all descendants using efficient regex query
   const descendants = await Category.find(
     {
       path: { $regex: `^${oldPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
@@ -102,14 +97,12 @@ export async function updateDescendantPaths(categoryId: string, newPath: string)
 
   if (descendants.length === 0) return 0;
 
-  // Prepare bulk update operations
   const bulkOps = descendants.map((descendant) => ({
     updateOne: {
       filter: { _id: descendant._id },
       update: {
         $set: {
           path: descendant.path.replace(oldPath, newPath),
-          // Update ancestors array by replacing old path with new path
           ancestors: descendant.path
             .split('/')
             .slice(0, -1)
@@ -119,7 +112,6 @@ export async function updateDescendantPaths(categoryId: string, newPath: string)
     },
   }));
 
-  // Execute all updates in a single batch operation
   const result = await Category.bulkWrite(bulkOps);
   return result.modifiedCount;
 }
@@ -140,7 +132,6 @@ export async function pathExists(path: string, excludeCategoryId?: string): Prom
     query._id = { $ne: excludeCategoryId };
   }
 
-  // Use lean() for better performance - we only need to know if it exists
   const existing = await Category.findOne(query, '_id').lean();
   return !!existing;
 }
@@ -159,7 +150,6 @@ export async function getCategoryAncestors(categoryId: string): Promise<Category
 
   if (category.ancestors.length === 0) return [];
 
-  // Single query to get all ancestors using indexed path lookup
   const ancestors = await Category.find({
     path: { $in: category.ancestors },
   })
@@ -183,7 +173,6 @@ export async function getCategoryDescendants(categoryId: string): Promise<Catego
     throw new CategoryNotFoundError(categoryId);
   }
 
-  // Single query to get all descendants using indexed path prefix
   const descendants = await Category.find({
     path: { $regex: `^${category.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
   })
@@ -201,7 +190,6 @@ export async function buildCategoryTree(
   rootLevel: number = 0,
   includeInactive: boolean = false,
 ): Promise<CategoryTreeNode[]> {
-  // Get root categories first
   const matchStage: Record<string, unknown> = { level: rootLevel };
   if (!includeInactive) {
     matchStage.isActive = true;
@@ -209,7 +197,6 @@ export async function buildCategoryTree(
 
   const rootCategories = await Category.find(matchStage).sort({ sortOrder: 1, name: 1 }).lean();
 
-  // Build tree recursively for each root category
   const buildChildren = async (parentId: string, parentPath: string): Promise<CategoryTreeNode[]> => {
     const childQuery: Record<string, unknown> = { parentId, ancestors: parentPath };
     if (!includeInactive) childQuery.isActive = true;
@@ -228,7 +215,6 @@ export async function buildCategoryTree(
     return childrenWithNested;
   };
 
-  // Build complete tree
   const tree: CategoryTreeNode[] = [];
   for (const root of rootCategories) {
     const rootWithChildren: CategoryTreeNode = {
@@ -258,7 +244,6 @@ export async function validateCategoryHierarchy(categoryData: {
       errors.push('Level must be a number between 0 and 2');
     }
 
-    // Level-specific validation
     if (categoryData.level === 0 && categoryData.parentId) {
       errors.push('Root level categories (level 0) cannot have a parent');
     }
@@ -267,7 +252,6 @@ export async function validateCategoryHierarchy(categoryData: {
       errors.push('Categories above level 0 must have a parent');
     }
 
-    // Parent validation (if parentId provided)
     if (categoryData.parentId) {
       if (!mongoose.Types.ObjectId.isValid(categoryData.parentId)) {
         errors.push('Invalid parent ID format');
@@ -276,14 +260,12 @@ export async function validateCategoryHierarchy(categoryData: {
         if (!parent) {
           errors.push('Parent category not found');
         } else {
-          // Check parent level constraint
           if (parent.level !== categoryData.level - 1) {
             errors.push(
               `Parent level (${parent.level}) must be exactly one level below child level (${categoryData.level})`,
             );
           }
 
-          // Check path uniqueness
           const proposedPath = await generateCategoryPath(categoryData.name, categoryData.parentId);
           const pathAlreadyExists = await pathExists(proposedPath, categoryData._id);
           if (pathAlreadyExists) {
@@ -293,7 +275,6 @@ export async function validateCategoryHierarchy(categoryData: {
       }
     }
 
-    // Validate against creating cycles (if updating existing category)
     if (categoryData._id && categoryData.parentId) {
       const descendants = await getCategoryDescendants(categoryData._id);
       const descendantIds = descendants.map((d) => d._id?.toString());
@@ -331,17 +312,14 @@ export async function createCategoryWithHierarchy(categoryData: {
 
   try {
     return await session.withTransaction(async () => {
-      // Validate hierarchy
       const validation = await validateCategoryHierarchy(categoryData);
       if (!validation.valid) {
         throw new InvalidHierarchyError(validation.errors.join('; '));
       }
 
-      // Generate path and ancestors
       const path = await generateCategoryPath(categoryData.name, categoryData.parentId);
       const ancestors = await generateAncestors(categoryData.parentId);
 
-      // Create category
       const newCategory = new Category({
         name: categoryData.name,
         description: categoryData.description,
@@ -385,7 +363,6 @@ export async function getCategoriesPaginated(
 }> {
   const { page = 1, limit = 50, level, parentId, isActive, search } = options;
 
-  // Build query
   const query: Record<string, unknown> = {};
 
   if (typeof level === 'number') query.level = level;
@@ -393,7 +370,6 @@ export async function getCategoriesPaginated(
   if (typeof isActive === 'boolean') query.isActive = isActive;
   if (search) query.$text = { $search: search };
 
-  // Execute queries in parallel for efficiency
   const [categories, total] = await Promise.all([
     Category.find(query)
       .sort(search ? { score: { $meta: 'textScore' } } : { level: 1, sortOrder: 1, name: 1 })
