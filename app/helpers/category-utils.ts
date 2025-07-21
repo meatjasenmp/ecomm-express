@@ -8,11 +8,7 @@ type CategoryTreeNode = CategoryInterface & {
 
 // Custom error classes for better error handling
 export class CategoryError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public statusCode: number = 400,
-  ) {
+  constructor(message: string) {
     super(message);
     this.name = 'CategoryError';
   }
@@ -20,13 +16,13 @@ export class CategoryError extends Error {
 
 export class CategoryNotFoundError extends CategoryError {
   constructor(id: string) {
-    super(`Category with ID ${id} not found`, 'CATEGORY_NOT_FOUND', 404);
+    super(`Category with ID ${id} not found`);
   }
 }
 
 export class InvalidHierarchyError extends CategoryError {
   constructor(message: string) {
-    super(message, 'INVALID_HIERARCHY', 400);
+    super(message);
   }
 }
 
@@ -35,7 +31,7 @@ export class InvalidHierarchyError extends CategoryError {
  */
 export function createSlug(name: string): string {
   if (!name || !name.trim()) {
-    throw new CategoryError('Generated slug is empty - invalid name provided', 'INVALID_SLUG');
+    throw new CategoryError('Generated slug is empty - invalid name provided');
   }
 
   const slug = slugify(name, {
@@ -45,7 +41,7 @@ export function createSlug(name: string): string {
   });
 
   if (!slug) {
-    throw new CategoryError('Generated slug is empty - invalid name provided', 'INVALID_SLUG');
+    throw new CategoryError('Generated slug is empty - invalid name provided');
   }
 
   return slug;
@@ -139,7 +135,7 @@ export async function pathExists(path: string, excludeCategoryId?: string): Prom
 
   if (excludeCategoryId) {
     if (!mongoose.Types.ObjectId.isValid(excludeCategoryId)) {
-      throw new CategoryError('Invalid category ID format', 'INVALID_ID');
+      throw new CategoryError('Invalid category ID format');
     }
     query._id = { $ne: excludeCategoryId };
   }
@@ -155,7 +151,7 @@ export async function pathExists(path: string, excludeCategoryId?: string): Prom
  */
 export async function getCategoryAncestors(categoryId: string): Promise<CategoryInterface[]> {
   if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-    throw new CategoryError('Invalid category ID format', 'INVALID_ID');
+    throw new CategoryError('Invalid category ID format');
   }
 
   const category = await Category.findById(categoryId, 'ancestors').lean();
@@ -179,7 +175,7 @@ export async function getCategoryAncestors(categoryId: string): Promise<Category
  */
 export async function getCategoryDescendants(categoryId: string): Promise<CategoryInterface[]> {
   if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-    throw new CategoryError('Invalid category ID format', 'INVALID_ID');
+    throw new CategoryError('Invalid category ID format');
   }
 
   const category = await Category.findById(categoryId, 'path').lean();
@@ -362,7 +358,7 @@ export async function createCategoryWithHierarchy(categoryData: {
     });
   } catch (error) {
     if (error instanceof CategoryError) throw error;
-    throw new CategoryError(`Failed to create category: ${(error as Error).message}`, 'CREATE_FAILED', 500);
+    throw new CategoryError(`Failed to create category: ${(error as Error).message}`);
   } finally {
     await session.endSession();
   }
