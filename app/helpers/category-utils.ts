@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
-import Category, { type CategoryInterface } from '../db/models/Categories.js';
+import slugify from 'slugify';
+import Category, { type CategoryInterface } from '../db/models/Categories.ts';
+
+type CategoryTreeNode = CategoryInterface & {
+  children: CategoryTreeNode[];
+};
 
 // Custom error classes for better error handling
 export class CategoryError extends Error {
@@ -26,17 +31,18 @@ export class InvalidHierarchyError extends CategoryError {
 }
 
 /**
- * Convert a category name to URL-friendly slug
- * Production-ready with comprehensive sanitization
+ * Convert a category name to URL-friendly slug using slugify
  */
 export function createSlug(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  if (!name || !name.trim()) {
+    throw new CategoryError('Generated slug is empty - invalid name provided', 'INVALID_SLUG');
+  }
+
+  const slug = slugify(name, {
+    lower: true,
+    strict: true,
+    remove: /[*+~.()'";!:@]/g,
+  });
 
   if (!slug) {
     throw new CategoryError('Generated slug is empty - invalid name provided', 'INVALID_SLUG');
@@ -129,7 +135,7 @@ export async function updateDescendantPaths(categoryId: string, newPath: string)
 export async function pathExists(path: string, excludeCategoryId?: string): Promise<boolean> {
   if (!path) return false;
 
-  const query: any = { path };
+  const query: Record<string, unknown> = { path };
 
   if (excludeCategoryId) {
     if (!mongoose.Types.ObjectId.isValid(excludeCategoryId)) {
@@ -195,9 +201,12 @@ export async function getCategoryDescendants(categoryId: string): Promise<Catego
  * Build complete category tree using optimized aggregation
  * Production-ready with caching potential and memory efficiency
  */
-export async function buildCategoryTree(rootLevel: number = 0, includeInactive: boolean = false): Promise<any[]> {
+export async function buildCategoryTree(
+  rootLevel: number = 0,
+  includeInactive: boolean = false,
+): Promise<CategoryTreeNode[]> {
   // Get root categories first
-  const matchStage: any = { level: rootLevel };
+  const matchStage: Record<string, unknown> = { level: rootLevel };
   if (!includeInactive) {
     matchStage.isActive = true;
   }
@@ -205,20 +214,18 @@ export async function buildCategoryTree(rootLevel: number = 0, includeInactive: 
   const rootCategories = await Category.find(matchStage).sort({ sortOrder: 1, name: 1 }).lean();
 
   // Build tree recursively for each root category
-  const buildChildren = async (parentId: string, parentPath: string): Promise<any[]> => {
-    const childQuery: any = { parentId, ancestors: parentPath };
-    if (!includeInactive) {
-      childQuery.isActive = true;
-    }
+  const buildChildren = async (parentId: string, parentPath: string): Promise<CategoryTreeNode[]> => {
+    const childQuery: Record<string, unknown> = { parentId, ancestors: parentPath };
+    if (!includeInactive) childQuery.isActive = true;
 
     const children = await Category.find(childQuery).sort({ sortOrder: 1, name: 1 }).lean();
 
-    const childrenWithNested: any[] = [];
+    const childrenWithNested: CategoryTreeNode[] = [];
     for (const child of children) {
-      const nestedChild = {
+      const nestedChild: CategoryTreeNode = {
         ...child,
         children: await buildChildren(child._id.toString(), child.path),
-      };
+      } as CategoryTreeNode;
       childrenWithNested.push(nestedChild);
     }
 
@@ -226,12 +233,12 @@ export async function buildCategoryTree(rootLevel: number = 0, includeInactive: 
   };
 
   // Build complete tree
-  const tree: any[] = [];
+  const tree: CategoryTreeNode[] = [];
   for (const root of rootCategories) {
-    const rootWithChildren = {
+    const rootWithChildren: CategoryTreeNode = {
       ...root,
       children: await buildChildren(root._id.toString(), root.path),
-    };
+    } as CategoryTreeNode;
     tree.push(rootWithChildren);
   }
 
@@ -383,7 +390,7 @@ export async function getCategoriesPaginated(
   const { page = 1, limit = 50, level, parentId, isActive, search } = options;
 
   // Build query
-  const query: any = {};
+  const query: Record<string, unknown> = {};
 
   if (typeof level === 'number') query.level = level;
   if (parentId) query.parentId = parentId;
