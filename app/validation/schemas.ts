@@ -22,7 +22,7 @@ export const CategoryUpdateSchema = z.object({
 
 export const ImageSchema = z.object({
   name: z.string().min(1, 'Image name is required'),
-  url: z.string().url('Invalid URL format'),
+  url: z.url('Invalid URL format for image'),
   key: z.string().min(1, 'Image key is required'),
 });
 
