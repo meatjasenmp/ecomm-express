@@ -35,7 +35,7 @@ export const ProductSchema = z.object({
     .max(300, 'Short description must be less than 300 characters'),
   price: z.number().min(0, 'Price must be a positive number'),
   categories: z.array(ObjectIdSchema).min(1, 'At least one category is required'),
-  images: z.array(ObjectIdSchema).min(1, 'At least one image is required'),
+  images: z.array(ObjectIdSchema).default([]),
   discount: z.number().min(0, 'Discount must be a positive number').max(100, 'Discount cannot exceed 100%').optional(),
   isPublished: z.boolean().optional(),
 });
@@ -54,7 +54,7 @@ export const ProductUpdateSchema = z.object({
     .optional(),
   price: z.number().min(0, 'Price must be a positive number').optional(),
   categories: z.array(ObjectIdSchema).min(1, 'At least one category is required').optional(),
-  images: z.array(ObjectIdSchema).min(1, 'At least one image is required').optional(),
+  images: z.array(ObjectIdSchema).default([]).optional(),
   discount: z.number().min(0, 'Discount must be a positive number').max(100, 'Discount cannot exceed 100%').optional(),
   isPublished: z.boolean().optional(),
 });
