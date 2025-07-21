@@ -8,7 +8,7 @@ export interface CategoryInterface {
   parentId: string | null;
   level: number;
   path: string;
-  ancestors: string[]; // Array of ancestor paths for efficient querying
+  ancestors: string[];
   isActive: boolean;
   sortOrder: number;
   createdAt?: Date;
@@ -36,7 +36,7 @@ categorySchema.index({ parentId: 1, sortOrder: 1 });
 categorySchema.index({ level: 1, isActive: 1, sortOrder: 1 });
 categorySchema.index({ ancestors: 1 });
 categorySchema.index({ isActive: 1, sortOrder: 1 });
-categorySchema.index({ name: 'text', description: 'text' }); // Full-text search
+categorySchema.index({ name: 'text', description: 'text' });
 
 const Category = model('Category', categorySchema);
 export default Category;
