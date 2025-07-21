@@ -12,7 +12,6 @@ import {
 } from '../../app/helpers/category-utils.js';
 import 'dotenv/config';
 
-// Connect to MongoDB Atlas
 async function connectDB() {
   const uri = process.env.ATLAS_URI;
   if (!uri) {
@@ -28,7 +27,6 @@ async function connectDB() {
   }
 }
 
-// Test production-ready category utilities
 async function testCategoryUtils() {
   console.log('\n🧪 Testing Production Category Utilities...\n');
 
@@ -212,7 +210,6 @@ async function testCategoryUtils() {
   }
 }
 
-// Run the tests
 async function runTests() {
   await connectDB();
   await testCategoryUtils();
