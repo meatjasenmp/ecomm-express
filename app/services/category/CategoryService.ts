@@ -17,18 +17,18 @@ export class CategoryService {
   private hierarchy = new CategoryHierarchy();
   private query = new CategoryQuery();
 
-  isHierarchyUpdate(updateData: CategoryUpdateData): boolean {
+  private isHierarchyUpdate(updateData: CategoryUpdateData): boolean {
     return updateData.name !== undefined || updateData.parentId !== undefined || updateData.level !== undefined;
   }
 
-  needsPathUpdate(updateData: CategoryUpdateData, existingCategory: CategoryInterface): boolean {
+  private needsPathUpdate(updateData: CategoryUpdateData, existingCategory: CategoryInterface): boolean {
     const nameChanged = updateData.name !== undefined;
     const parentChanged = updateData.parentId !== undefined && updateData.parentId !== existingCategory.parentId;
 
     return nameChanged || parentChanged;
   }
 
-  buildValidationData(updateData: CategoryUpdateData, existingCategory: CategoryInterface, categoryId: string) {
+  private buildValidationData(updateData: CategoryUpdateData, existingCategory: CategoryInterface, categoryId: string) {
     return {
       name: updateData.name || existingCategory.name,
       parentId: updateData.parentId ?? existingCategory.parentId,
@@ -37,7 +37,7 @@ export class CategoryService {
     };
   }
 
-  async validatePathUniqueness(name: string, parentId: string, excludeCategoryId?: string): Promise<string[]> {
+  private async validatePathUniqueness(name: string, parentId: string, excludeCategoryId?: string): Promise<string[]> {
     const errors: string[] = [];
 
     const proposedPath = await this.hierarchy.generateCategoryPath(name, parentId);
@@ -50,7 +50,7 @@ export class CategoryService {
     return errors;
   }
 
-  async validateNoCyclicDependency(categoryId: string, parentId: string): Promise<string[]> {
+  private async validateNoCyclicDependency(categoryId: string, parentId: string): Promise<string[]> {
     const errors: string[] = [];
 
     const descendants = await this.hierarchy.getCategoryDescendants(categoryId);

@@ -2,7 +2,7 @@ import Category, { type CategoryInterface } from '../../db/models/Categories.ts'
 import type { CategoryTreeNode, CategoryQueryOptions, PaginatedResult } from './types.ts';
 
 export class CategoryQuery {
-  buildSortOrder(hasSearch: boolean): Record<string, any> {
+  private buildSortOrder(hasSearch: boolean): Record<string, number | { $meta: string }> {
     if (hasSearch) return { score: { $meta: 'textScore' } };
     return { level: 1, sortOrder: 1, name: 1 };
   }
@@ -17,11 +17,9 @@ export class CategoryQuery {
     if (typeof isActive === 'boolean') query.isActive = isActive;
     if (search) query.$text = { $search: search };
 
-    const sortOrder = this.buildSortOrder(!!search);
-
     const [categories, total] = await Promise.all([
       Category.find(query)
-        .sort(sortOrder)
+        .sort(this.buildSortOrder(!!search) as never)
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),

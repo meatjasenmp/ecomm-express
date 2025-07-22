@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
-import Category, { CategoryInterface } from '../../db/models/Categories.ts';
+import Category, { type CategoryInterface } from '../../db/models/Categories.ts';
 import { CategoryError, CategoryNotFoundError } from '../errors/CategoryErrors.ts';
 
 export class CategoryHierarchy {
-  createSlug(name: string): string {
+  private createSlug(name: string): string {
     if (!name || !name.trim()) {
       throw new CategoryError('Generated slug is empty - invalid name provided');
     }
