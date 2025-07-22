@@ -11,9 +11,9 @@ export const validate = (schema: ZodType) => {
       if (error instanceof ZodError) {
         res.status(400).json({
           message: 'Validation failed',
-          errors: (error as any).errors.map((err: any) => ({
-            field: err.path.join('.'),
-            message: err.message,
+          errors: error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
           })),
         });
         return;
@@ -34,9 +34,9 @@ export const validateParams = (schema: ZodType) => {
       if (error instanceof ZodError) {
         res.status(400).json({
           message: 'Invalid parameters',
-          errors: (error as any).errors.map((err: any) => ({
-            field: err.path.join('.'),
-            message: err.message,
+          errors: error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
           })),
         });
         return;

@@ -25,9 +25,6 @@ export class InvalidHierarchyError extends CategoryError {
   }
 }
 
-/**
- * Convert a category name to URL-friendly slug using slugify
- */
 export function createSlug(name: string): string {
   if (!name || !name.trim()) {
     throw new CategoryError('Generated slug is empty - invalid name provided');
@@ -48,7 +45,6 @@ export function createSlug(name: string): string {
 
 /**
  * Generate ancestors array from parent category
- * Uses single database query for efficiency
  */
 export async function generateAncestors(parentId: string | null): Promise<string[]> {
   if (!parentId) return [];
@@ -63,7 +59,6 @@ export async function generateAncestors(parentId: string | null): Promise<string
 
 /**
  * Generate the full path for a category based on its parent
- * Production-ready with validation and error handling
  */
 export async function generateCategoryPath(name: string, parentId: string | null): Promise<string> {
   const slug = createSlug(name);
@@ -78,7 +73,6 @@ export async function generateCategoryPath(name: string, parentId: string | null
 
 /**
  * Update paths of all descendant categories using aggregation
- * Production-ready with batch operations and error handling
  */
 export async function updateDescendantPaths(categoryId: string, newPath: string): Promise<number> {
   const category = await Category.findById(categoryId, 'path').lean();
@@ -118,7 +112,6 @@ export async function updateDescendantPaths(categoryId: string, newPath: string)
 
 /**
  * Check if a path already exists using indexed query
- * Production-ready with proper validation
  */
 export async function pathExists(path: string, excludeCategoryId?: string): Promise<boolean> {
   if (!path) return false;
@@ -138,7 +131,6 @@ export async function pathExists(path: string, excludeCategoryId?: string): Prom
 
 /**
  * Get all ancestors of a category using materialized path
- * Single query using the ancestors array - highly efficient
  */
 export async function getCategoryAncestors(categoryId: string): Promise<CategoryInterface[]> {
   if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -161,7 +153,6 @@ export async function getCategoryAncestors(categoryId: string): Promise<Category
 
 /**
  * Get all descendants of a category using path prefix
- * Single efficient query using indexed path field
  */
 export async function getCategoryDescendants(categoryId: string): Promise<CategoryInterface[]> {
   if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -184,7 +175,6 @@ export async function getCategoryDescendants(categoryId: string): Promise<Catego
 
 /**
  * Build complete category tree using optimized aggregation
- * Production-ready with caching potential and memory efficiency
  */
 export async function buildCategoryTree(
   rootLevel: number = 0,
@@ -229,7 +219,6 @@ export async function buildCategoryTree(
 
 /**
  * Comprehensive category hierarchy validation
- * Production-ready with detailed error reporting
  */
 export async function validateCategoryHierarchy(categoryData: {
   name: string;
@@ -299,7 +288,6 @@ export async function validateCategoryHierarchy(categoryData: {
 
 /**
  * Create category with full hierarchy management
- * Production-ready with transactions and comprehensive error handling
  */
 export async function createCategoryWithHierarchy(categoryData: {
   name: string;
@@ -344,7 +332,6 @@ export async function createCategoryWithHierarchy(categoryData: {
 
 /**
  * Get categories with pagination and filtering
- * Production-ready with efficient querying
  */
 export async function getCategoriesPaginated(
   options: {
