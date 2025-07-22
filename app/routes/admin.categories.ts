@@ -1,12 +1,18 @@
 import express, { type Request, type Response } from 'express';
 import Category, { type CategoryInterface } from '../db/models/Categories.ts';
 import { validate, validateParams, validateQuery } from '../middleware/validation.ts';
-import { CategorySchema, CategoryUpdateSchema, IdParamsSchema, CategoryQuerySchema } from '../validation/schemas.ts';
-import type { CategoryInput, CategoryUpdateInput, CategoryQueryInput } from '../validation/schemas.ts';
+import { IdParamsSchema } from '../validation/schemas/common.ts';
+import { 
+  CategorySchema, 
+  CategoryUpdateSchema, 
+  CategoryQuerySchema,
+  type CategoryInput, 
+  type CategoryUpdateInput, 
+  type CategoryQueryInput 
+} from '../validation/schemas/category.ts';
 import {
   createCategoryWithHierarchy,
   getCategoriesPaginated,
-  getCategoryDescendants,
 } from '../helpers/category-utils.ts';
 import { handleCategoryError } from '../helpers/category-error-handler.ts';
 

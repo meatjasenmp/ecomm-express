@@ -1,8 +1,13 @@
 import express, { type Request, type Response } from 'express';
 import Product, { type ProductInterface } from '../db/models/Products.ts';
 import { validate, validateParams } from '../middleware/validation.ts';
-import { ProductSchema, ProductUpdateSchema, IdParamsSchema } from '../validation/schemas.ts';
-import type { ProductInput, ProductUpdateInput } from '../validation/schemas.ts';
+import { IdParamsSchema } from '../validation/schemas/common.ts';
+import { 
+  ProductSchema, 
+  ProductUpdateSchema,
+  type ProductInput, 
+  type ProductUpdateInput 
+} from '../validation/schemas/product.ts';
 
 const productRoutes = express.Router();
 

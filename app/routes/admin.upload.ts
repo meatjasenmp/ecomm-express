@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import Image from '../db/models/Images';
 import upload from '../helpers/s3';
-import type { ImageInput } from '../validation/schemas.ts';
+import type { ImageInput } from '../validation/schemas/image.ts';
 
 const uploadRoutes = express.Router();
 
