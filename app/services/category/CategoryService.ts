@@ -1,0 +1,252 @@
+import mongoose from 'mongoose';
+import Category, { type CategoryInterface } from '../../db/models/Categories.ts';
+import { CategoryError, CategoryNotFoundError, InvalidHierarchyError } from '../errors/CategoryErrors.ts';
+import { CategoryValidator } from './CategoryValidator.ts';
+import { CategoryHierarchy } from './CategoryHierarchy.ts';
+import { CategoryQuery } from './CategoryQuery.ts';
+import { ErrorCollector } from './ErrorCollector.ts';
+import type {
+  CategoryCreateData,
+  CategoryUpdateData,
+  CategoryQueryOptions,
+  PaginatedResult,
+  CategoryTreeNode,
+} from './types.ts';
+
+export class CategoryService {
+  private validator = new CategoryValidator();
+  private hierarchy = new CategoryHierarchy();
+  private query = new CategoryQuery();
+  private errorCollector = new ErrorCollector();
+
+  isHierarchyUpdate(updateData: CategoryUpdateData): boolean {
+    return updateData.name !== undefined || updateData.parentId !== undefined || updateData.level !== undefined;
+  }
+
+  needsPathUpdate(updateData: CategoryUpdateData, existingCategory: CategoryInterface): boolean {
+    const nameChanged = updateData.name !== undefined;
+    const parentChanged = updateData.parentId !== undefined && updateData.parentId !== existingCategory.parentId;
+
+    return nameChanged || parentChanged;
+  }
+
+  buildValidationData(updateData: CategoryUpdateData, existingCategory: CategoryInterface, categoryId: string) {
+    return {
+      name: updateData.name || existingCategory.name,
+      parentId: updateData.parentId ?? existingCategory.parentId,
+      level: updateData.level ?? existingCategory.level,
+      _id: categoryId,
+    };
+  }
+
+  async validatePathUniqueness(name: string, parentId: string, excludeCategoryId?: string): Promise<string[]> {
+    this.errorCollector.clear();
+
+    const proposedPath = await this.hierarchy.generateCategoryPath(name, parentId);
+    const pathExists = await this.hierarchy.pathExists(proposedPath, excludeCategoryId);
+
+    this.errorCollector.addConditional(pathExists, `Path "${proposedPath}" already exists`);
+
+    return this.errorCollector.getErrors();
+  }
+
+  async validateNoCyclicDependency(categoryId: string, parentId: string): Promise<string[]> {
+    this.errorCollector.clear();
+
+    const descendants = await this.hierarchy.getCategoryDescendants(categoryId);
+    const descendantIds = descendants.map((d) => d._id?.toString());
+
+    this.errorCollector.addConditional(
+      descendantIds.includes(parentId),
+      'Cannot set a descendant category as parent (would create cycle)'
+    );
+
+    return this.errorCollector.getErrors();
+  }
+
+  async validateCategoryHierarchy(categoryData: {
+    name: string;
+    parentId: string | null;
+    level: number;
+    _id?: string;
+  }): Promise<{ valid: boolean; errors: string[] }> {
+    this.errorCollector.clear();
+
+    try {
+      this.errorCollector.addMany(this.validator.validateLevel(categoryData.level));
+      this.errorCollector.addMany(this.validator.validateRootLevelConstraints(categoryData.level, categoryData.parentId));
+
+      if (categoryData.parentId) {
+        const parentValidation = await this.validator.validateParentExists(categoryData.parentId);
+
+        if (!parentValidation.valid) {
+          this.errorCollector.add(parentValidation.error!);
+        } else {
+          this.errorCollector.addMany(this.validator.validateParentLevel(parentValidation.parent!.level, categoryData.level));
+          this.errorCollector.addMany(
+            await this.validatePathUniqueness(categoryData.name, categoryData.parentId, categoryData._id)
+          );
+        }
+      }
+
+      if (categoryData._id && categoryData.parentId) {
+        this.errorCollector.addMany(await this.validateNoCyclicDependency(categoryData._id, categoryData.parentId));
+      }
+    } catch (error) {
+      if (error instanceof CategoryError) {
+        this.errorCollector.add(error.message);
+      } else {
+        this.errorCollector.add(`Validation failed: ${(error as Error).message}`);
+      }
+    }
+
+    return this.errorCollector.toValidationResult();
+  }
+
+  async createCategory(categoryData: CategoryCreateData): Promise<CategoryInterface> {
+    const session = await mongoose.startSession();
+
+    try {
+      return await session.withTransaction(async () => {
+        const validation = await this.validateCategoryHierarchy(categoryData);
+        if (!validation.valid) {
+          throw new InvalidHierarchyError(validation.errors.join('; '));
+        }
+
+        const path = await this.hierarchy.generateCategoryPath(categoryData.name, categoryData.parentId);
+        const ancestors = await this.hierarchy.generateAncestors(categoryData.parentId);
+
+        const newCategory = new Category({
+          name: categoryData.name,
+          description: categoryData.description,
+          parentId: categoryData.parentId,
+          level: categoryData.level,
+          path,
+          ancestors,
+          sortOrder: categoryData.sortOrder || 0,
+          isActive: true,
+        });
+
+        const savedCategory = await newCategory.save({ session });
+        return savedCategory.toObject() as CategoryInterface;
+      });
+    } catch (error) {
+      if (error instanceof CategoryError) throw error;
+      throw new CategoryError(`Failed to create category: ${(error as Error).message}`);
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async updateCategory(categoryId: string, updateData: CategoryUpdateData): Promise<CategoryInterface> {
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      throw new CategoryError('Invalid category ID format');
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+      return await session.withTransaction(async () => {
+        const existingCategory = await Category.findById(categoryId).session(session);
+        if (!existingCategory) {
+          throw new CategoryNotFoundError(categoryId);
+        }
+
+        if (this.isHierarchyUpdate(updateData)) {
+          const validationData = this.buildValidationData(updateData, existingCategory, categoryId);
+          const validation = await this.validateCategoryHierarchy(validationData);
+
+          if (!validation.valid) {
+            throw new InvalidHierarchyError(validation.errors.join('; '));
+          }
+
+          if (this.needsPathUpdate(updateData, existingCategory)) {
+            const newName = updateData.name || existingCategory.name;
+            const newParentId = updateData.parentId ?? existingCategory.parentId;
+            const newPath = await this.hierarchy.generateCategoryPath(newName, newParentId);
+
+            if (newPath !== existingCategory.path) {
+              await this.hierarchy.updateDescendantPaths(categoryId, newPath);
+              updateData = { ...updateData, path: newPath };
+            }
+          }
+
+          if (updateData.parentId !== undefined && updateData.parentId !== existingCategory.parentId) {
+            const newAncestors = await this.hierarchy.generateAncestors(updateData.parentId);
+            updateData = { ...updateData, ancestors: newAncestors };
+          }
+        }
+
+        const updatedCategory = await Category.findByIdAndUpdate(
+          categoryId,
+          { $set: updateData },
+          { new: true, session, runValidators: true },
+        ).lean();
+
+        if (!updatedCategory) {
+          throw new CategoryError('Failed to update category');
+        }
+
+        return updatedCategory as CategoryInterface;
+      });
+    } catch (error) {
+      if (error instanceof CategoryError) throw error;
+      throw new CategoryError(`Failed to update category: ${(error as Error).message}`);
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async getCategories(options: CategoryQueryOptions = {}): Promise<PaginatedResult<CategoryInterface>> {
+    return this.query.getCategoriesPaginated(options);
+  }
+
+  async getCategoryTree(rootLevel: number = 0, includeInactive: boolean = false): Promise<CategoryTreeNode[]> {
+    return this.query.buildCategoryTree(rootLevel, includeInactive);
+  }
+
+  async getCategoryAncestors(categoryId: string): Promise<CategoryInterface[]> {
+    return this.hierarchy.getCategoryAncestors(categoryId);
+  }
+
+  async getCategoryDescendants(categoryId: string): Promise<CategoryInterface[]> {
+    return this.hierarchy.getCategoryDescendants(categoryId);
+  }
+
+  async deleteCategory(categoryId: string): Promise<void> {
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      throw new CategoryError('Invalid category ID format');
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+      await session.withTransaction(async () => {
+        const category = await Category.findById(categoryId).session(session);
+        if (!category) {
+          throw new CategoryNotFoundError(categoryId);
+        }
+
+        const descendants = await this.hierarchy.getCategoryDescendants(categoryId);
+        if (descendants.length > 0) {
+          throw new CategoryError('Cannot delete category with subcategories. Delete subcategories first.');
+        }
+
+        const Product = mongoose.model('Product');
+        const productsUsingCategory = await Product.countDocuments({ categories: categoryId });
+        if (productsUsingCategory > 0) {
+          throw new CategoryError(`Cannot delete category. ${productsUsingCategory} products are using this category.`);
+        }
+
+        await Category.deleteOne({ _id: categoryId }).session(session);
+      });
+    } catch (error) {
+      if (error instanceof CategoryError) throw error;
+      throw new CategoryError(`Failed to delete category: ${(error as Error).message}`);
+    } finally {
+      await session.endSession();
+    }
+  }
+}
+
+export default new CategoryService();
