@@ -1,38 +1,42 @@
 import express, { type Request, type Response } from 'express';
 import Category, { type CategoryInterface } from '../db/models/Categories.ts';
-import { validate, validateParams } from '../middleware/validation.ts';
-import { CategorySchema, CategoryUpdateSchema, IdParamsSchema } from '../validation/schemas.ts';
-import type { CategoryInput, CategoryUpdateInput } from '../validation/schemas.ts';
+import { validate, validateParams, validateQuery } from '../middleware/validation.ts';
+import { CategorySchema, CategoryUpdateSchema, IdParamsSchema, CategoryQuerySchema } from '../validation/schemas.ts';
+import type { CategoryInput, CategoryUpdateInput, CategoryQueryInput } from '../validation/schemas.ts';
+import {
+  createCategoryWithHierarchy,
+  getCategoriesPaginated,
+  getCategoryDescendants,
+} from '../helpers/category-utils.ts';
+import { handleCategoryError } from '../helpers/category-error-handler.ts';
 
 const categoryRoutes = express.Router();
 
-categoryRoutes.get('/categories', async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const categories: CategoryInterface[] = await Category.find();
-    res.status(200).json(categories);
-  } catch (err) {
-    res.status(400).send({
-      message: 'Failed to fetch categories',
-      error: err,
-    });
-  }
-});
+categoryRoutes.get(
+  '/categories',
+  validateQuery(CategoryQuerySchema),
+  async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const queryParams = res.locals.parsedQuery as CategoryQueryInput;
+      const result = await getCategoriesPaginated(queryParams);
+      res.status(200).json(result);
+    } catch (err) {
+      handleCategoryError(err, res);
+    }
+  },
+);
 
 categoryRoutes.post(
   '/create-category',
   validate(CategorySchema),
   async (req: Request, res: Response): Promise<void> => {
     const categoryData: CategoryInput = req.body;
-    const category = new Category(categoryData);
 
     try {
-      const savedCategory: CategoryInterface = await category.save();
+      const savedCategory = await createCategoryWithHierarchy(categoryData);
       res.status(201).json(savedCategory);
     } catch (err) {
-      res.status(400).send({
-        message: 'Failed to create category',
-        error: err,
-      });
+      handleCategoryError(err, res);
     }
   },
 );

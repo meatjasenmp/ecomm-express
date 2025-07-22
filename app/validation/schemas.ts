@@ -69,8 +69,18 @@ export const IdParamsSchema = z.object({
   id: ObjectIdSchema,
 });
 
+export const CategoryQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1).optional(),
+  limit: z.coerce.number().int().positive().max(100).default(50).optional(),
+  level: z.coerce.number().int().min(0).max(2).optional(),
+  parentId: ObjectIdSchema.optional(),
+  isActive: z.enum(['true', 'false']).transform((val) => val === 'true').optional(),
+  search: z.string().min(1).optional(),
+});
+
 export type CategoryInput = z.infer<typeof CategorySchema>;
 export type CategoryUpdateInput = z.infer<typeof CategoryUpdateSchema>;
+export type CategoryQueryInput = z.infer<typeof CategoryQuerySchema>;
 export type ProductInput = z.infer<typeof ProductSchema>;
 export type ProductUpdateInput = z.infer<typeof ProductUpdateSchema>;
 export type ImageInput = z.infer<typeof ImageSchema>;
