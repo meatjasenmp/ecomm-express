@@ -5,5 +5,3 @@ export const ObjectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid Object
 export const IdParamsSchema = z.object({
   id: ObjectIdSchema,
 });
-
-export type IdParams = z.infer<typeof IdParamsSchema>;
