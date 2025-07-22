@@ -1,5 +1,4 @@
 import express, { type Request, type Response } from 'express';
-import Category, { type CategoryInterface } from '../db/models/Categories.ts';
 import { validate, validateParams, validateQuery } from '../middleware/validation.ts';
 import { IdParamsSchema } from '../validation/schemas/common.ts';
 import { 
@@ -10,10 +9,7 @@ import {
   type CategoryUpdateInput, 
   type CategoryQueryInput 
 } from '../validation/schemas/category.ts';
-import {
-  createCategoryWithHierarchy,
-  getCategoriesPaginated,
-} from '../helpers/category-utils.ts';
+import categoryService from '../services/category/CategoryService.ts';
 import { handleCategoryError } from '../helpers/category-error-handler.ts';
 
 const categoryRoutes = express.Router();
@@ -24,7 +20,7 @@ categoryRoutes.get(
   async (_req: Request, res: Response): Promise<void> => {
     try {
       const queryParams = res.locals.parsedQuery as CategoryQueryInput;
-      const result = await getCategoriesPaginated(queryParams);
+      const result = await categoryService.getCategories(queryParams);
       res.status(200).json(result);
     } catch (err) {
       handleCategoryError(err, res);
@@ -39,7 +35,7 @@ categoryRoutes.post(
     const categoryData: CategoryInput = req.body;
 
     try {
-      const savedCategory = await createCategoryWithHierarchy(categoryData);
+      const savedCategory = await categoryService.createCategory(categoryData);
       res.status(201).json(savedCategory);
     } catch (err) {
       handleCategoryError(err, res);
@@ -56,14 +52,10 @@ categoryRoutes.patch(
     const updateData: CategoryUpdateInput = req.body;
 
     try {
-      await Category.updateOne({ _id: id }, updateData);
-      const updateCategory: CategoryInterface | null = await Category.findById(id);
-      res.status(200).json(updateCategory);
+      const updatedCategory = await categoryService.updateCategory(id, updateData);
+      res.status(200).json(updatedCategory);
     } catch (err) {
-      res.status(400).send({
-        message: 'Failed to update category',
-        error: err,
-      });
+      handleCategoryError(err, res);
     }
   },
 );
@@ -75,13 +67,54 @@ categoryRoutes.delete(
     const { id } = req.params;
 
     try {
-      const deletedCategory = await Category.deleteOne({ _id: id });
-      res.status(200).json(deletedCategory);
+      await categoryService.deleteCategory(id);
+      res.status(200).json({ message: 'Category deleted successfully' });
     } catch (err) {
-      res.status(400).send({
-        message: 'Failed to delete category',
-        error: err,
-      });
+      handleCategoryError(err, res);
+    }
+  },
+);
+
+categoryRoutes.get(
+  '/categories/tree',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const rootLevel = req.query.rootLevel ? parseInt(req.query.rootLevel as string) : 0;
+      const includeInactive = req.query.includeInactive === 'true';
+      const tree = await categoryService.getCategoryTree(rootLevel, includeInactive);
+      res.status(200).json(tree);
+    } catch (err) {
+      handleCategoryError(err, res);
+    }
+  },
+);
+
+categoryRoutes.get(
+  '/categories/:id/ancestors',
+  validateParams(IdParamsSchema),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    try {
+      const ancestors = await categoryService.getCategoryAncestors(id);
+      res.status(200).json(ancestors);
+    } catch (err) {
+      handleCategoryError(err, res);
+    }
+  },
+);
+
+categoryRoutes.get(
+  '/categories/:id/descendants',
+  validateParams(IdParamsSchema),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    try {
+      const descendants = await categoryService.getCategoryDescendants(id);
+      res.status(200).json(descendants);
+    } catch (err) {
+      handleCategoryError(err, res);
     }
   },
 );

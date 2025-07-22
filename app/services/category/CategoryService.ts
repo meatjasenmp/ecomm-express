@@ -4,7 +4,6 @@ import { CategoryError, CategoryNotFoundError, InvalidHierarchyError } from '../
 import { CategoryValidator } from './CategoryValidator.ts';
 import { CategoryHierarchy } from './CategoryHierarchy.ts';
 import { CategoryQuery } from './CategoryQuery.ts';
-import { ErrorCollector } from './ErrorCollector.ts';
 import type {
   CategoryCreateData,
   CategoryUpdateData,
@@ -17,7 +16,6 @@ export class CategoryService {
   private validator = new CategoryValidator();
   private hierarchy = new CategoryHierarchy();
   private query = new CategoryQuery();
-  private errorCollector = new ErrorCollector();
 
   isHierarchyUpdate(updateData: CategoryUpdateData): boolean {
     return updateData.name !== undefined || updateData.parentId !== undefined || updateData.level !== undefined;
@@ -40,28 +38,29 @@ export class CategoryService {
   }
 
   async validatePathUniqueness(name: string, parentId: string, excludeCategoryId?: string): Promise<string[]> {
-    this.errorCollector.clear();
+    const errors: string[] = [];
 
     const proposedPath = await this.hierarchy.generateCategoryPath(name, parentId);
     const pathExists = await this.hierarchy.pathExists(proposedPath, excludeCategoryId);
 
-    this.errorCollector.addConditional(pathExists, `Path "${proposedPath}" already exists`);
+    if (pathExists) {
+      errors.push(`Path "${proposedPath}" already exists`);
+    }
 
-    return this.errorCollector.getErrors();
+    return errors;
   }
 
   async validateNoCyclicDependency(categoryId: string, parentId: string): Promise<string[]> {
-    this.errorCollector.clear();
+    const errors: string[] = [];
 
     const descendants = await this.hierarchy.getCategoryDescendants(categoryId);
     const descendantIds = descendants.map((d) => d._id?.toString());
 
-    this.errorCollector.addConditional(
-      descendantIds.includes(parentId),
-      'Cannot set a descendant category as parent (would create cycle)'
-    );
+    if (descendantIds.includes(parentId)) {
+      errors.push('Cannot set a descendant category as parent (would create cycle)');
+    }
 
-    return this.errorCollector.getErrors();
+    return errors;
   }
 
   async validateCategoryHierarchy(categoryData: {
@@ -70,37 +69,42 @@ export class CategoryService {
     level: number;
     _id?: string;
   }): Promise<{ valid: boolean; errors: string[] }> {
-    this.errorCollector.clear();
+    const errors: string[] = [];
 
     try {
-      this.errorCollector.addMany(this.validator.validateLevel(categoryData.level));
-      this.errorCollector.addMany(this.validator.validateRootLevelConstraints(categoryData.level, categoryData.parentId));
+      const levelErrors = this.validator.validateLevel(categoryData.level);
+      errors.push(...levelErrors);
+      
+      const rootLevelErrors = this.validator.validateRootLevelConstraints(categoryData.level, categoryData.parentId);
+      errors.push(...rootLevelErrors);
 
       if (categoryData.parentId) {
         const parentValidation = await this.validator.validateParentExists(categoryData.parentId);
 
         if (!parentValidation.valid) {
-          this.errorCollector.add(parentValidation.error!);
+          errors.push(parentValidation.error!);
         } else {
-          this.errorCollector.addMany(this.validator.validateParentLevel(parentValidation.parent!.level, categoryData.level));
-          this.errorCollector.addMany(
-            await this.validatePathUniqueness(categoryData.name, categoryData.parentId, categoryData._id)
-          );
+          const parentLevelErrors = this.validator.validateParentLevel(parentValidation.parent!.level, categoryData.level);
+          errors.push(...parentLevelErrors);
+          
+          const pathErrors = await this.validatePathUniqueness(categoryData.name, categoryData.parentId, categoryData._id);
+          errors.push(...pathErrors);
         }
       }
 
       if (categoryData._id && categoryData.parentId) {
-        this.errorCollector.addMany(await this.validateNoCyclicDependency(categoryData._id, categoryData.parentId));
+        const cyclicErrors = await this.validateNoCyclicDependency(categoryData._id, categoryData.parentId);
+        errors.push(...cyclicErrors);
       }
     } catch (error) {
       if (error instanceof CategoryError) {
-        this.errorCollector.add(error.message);
+        errors.push(error.message);
       } else {
-        this.errorCollector.add(`Validation failed: ${(error as Error).message}`);
+        errors.push(`Validation failed: ${(error as Error).message}`);
       }
     }
 
-    return this.errorCollector.toValidationResult();
+    return { valid: errors.length === 0, errors };
   }
 
   async createCategory(categoryData: CategoryCreateData): Promise<CategoryInterface> {
