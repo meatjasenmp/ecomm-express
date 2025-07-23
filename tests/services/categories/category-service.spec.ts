@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
-import Category, { type CategoryInterface } from '../../app/db/models/Categories.ts';
-import Product from '../../app/db/models/Products.ts';
-import categoryService from '../../app/services/category/CategoryService.ts';
-import { CategoryError } from '../../app/services/errors/CategoryErrors.ts';
+import Category, { type CategoryInterface } from '../../../app/db/models/Categories.ts';
+import Product from '../../../app/db/models/Products.ts';
+import categoryService from '../../../app/services/categories/CategoryService.ts';
+import { CategoryError } from '../../../app/services/errors/CategoryErrors.ts';
 
 type CategoryWithChildren = CategoryInterface & {
   children?: CategoryWithChildren[];

@@ -9,7 +9,7 @@ import {
   type CategoryUpdateInput, 
   type CategoryQueryInput 
 } from '../validation/schemas/category.ts';
-import categoryService from '../services/category/CategoryService.ts';
+import categoryService from '../services/categories/CategoryService.ts';
 import { handleCategoryError } from '../helpers/category-error-handler.ts';
 
 const categoryRoutes = express.Router();

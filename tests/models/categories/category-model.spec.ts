@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import Category from '../../app/db/models/Categories.js';
+import Category from '../../../app/db/models/Categories.js';
 
 describe('Category Model', () => {
   beforeAll(() => {
