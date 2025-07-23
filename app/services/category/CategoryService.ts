@@ -32,6 +32,10 @@ export class CategoryService {
     return updateData.parentId !== undefined && updateData.parentId !== existingCategory.parentId;
   }
 
+  private hasPathChanged(newPath: string, existingPath: string): boolean {
+    return newPath !== existingPath;
+  }
+
   private buildValidationData(updateData: CategoryUpdateData, existingCategory: CategoryInterface, categoryId: string) {
     return {
       name: updateData.name || existingCategory.name,
@@ -173,7 +177,7 @@ export class CategoryService {
             const newParentId = updateData.parentId ?? existingCategory.parentId;
             const newPath = await this.hierarchy.generateCategoryPath(newName, newParentId);
 
-            if (newPath !== existingCategory.path) {
+            if (this.hasPathChanged(newPath, existingCategory.path)) {
               await this.hierarchy.updateDescendantPaths(categoryId, newPath);
               updateData = { ...updateData, path: newPath };
             }
