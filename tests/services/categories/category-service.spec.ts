@@ -63,7 +63,7 @@ describe('Category Utils', () => {
       expect(brand.level).toBe(0);
       expect(brand.parentId).toBeNull();
       expect(brand.ancestors).toEqual([]);
-      expect(brand.path).toBe(brandName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
+      expect(brand.path).toBe(faker.helpers.slugify(brandName.toLowerCase()));
 
       const category = await categoryService.createCategory({
         name: categoryName,
