@@ -121,6 +121,8 @@ export class CategoryHierarchy {
     if (!category) throw new CategoryNotFoundError(categoryId);
 
     const descendants = await Category.find({
+      // Find all categories whose path starts with this category's path + "/" (i.e., direct and indirect children)
+      // The regex escapes special characters in the path to prevent regex injection
       path: { $regex: `^${category.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
       deletedAt: null,
     })
