@@ -1,7 +1,7 @@
 import mongoose, { Types } from 'mongoose';
 const { Schema, model } = mongoose;
 
-export interface CategoryInterface {
+export type CategoryInterface = {
   _id?: Types.ObjectId;
   name: string;
   description: string;
@@ -14,7 +14,7 @@ export interface CategoryInterface {
   deletedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
-}
+};
 
 const categorySchema = new Schema<CategoryInterface>(
   {

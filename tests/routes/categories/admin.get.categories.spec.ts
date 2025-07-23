@@ -1,9 +1,16 @@
 import request from 'supertest';
 import express from 'express';
 import { faker } from '@faker-js/faker';
-import Category from '../../../app/db/models/Categories.ts';
+import Category, { type CategoryInterface } from '../../../app/db/models/Categories.ts';
 import Product from '../../../app/db/models/Products.ts';
 import categoryRoutes from '../../../app/routes/admin.categories.ts';
+
+type PaginatedCategoryResponse = {
+  data: CategoryInterface[];
+  total: number;
+  page: number;
+  totalPages: number;
+};
 
 const app = express();
 app.use(express.json());
@@ -46,13 +53,14 @@ describe('GET /categories', () => {
     });
 
     const response = await request(app).get('/categories').query({ page: 1, limit: 10 }).expect(200);
+    const body = response.body as PaginatedCategoryResponse;
 
-    expect(response.body).toHaveProperty('data');
-    expect(response.body).toHaveProperty('total');
-    expect(response.body).toHaveProperty('page', 1);
-    expect(response.body).toHaveProperty('totalPages');
-    expect(Array.isArray(response.body.data)).toBe(true);
-    expect(response.body.data.length).toBeGreaterThan(0);
+    expect(body).toHaveProperty('data');
+    expect(body).toHaveProperty('total');
+    expect(body).toHaveProperty('page', 1);
+    expect(body).toHaveProperty('totalPages');
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.data.length).toBeGreaterThan(0);
   });
 
   it('should filter categories by level', async () => {
@@ -88,11 +96,13 @@ describe('GET /categories', () => {
     });
 
     const level0Response = await request(app).get('/categories').query({ level: 0 }).expect(200);
+    const level0Body = level0Response.body as PaginatedCategoryResponse;
 
     const level1Response = await request(app).get('/categories').query({ level: 1 }).expect(200);
+    const level1Body = level1Response.body as PaginatedCategoryResponse;
 
-    expect(level0Response.body.data.every((cat: any) => cat.level === 0)).toBe(true);
-    expect(level1Response.body.data.every((cat: any) => cat.level === 1)).toBe(true);
+    expect(level0Body.data.every((cat: CategoryInterface) => cat.level === 0)).toBe(true);
+    expect(level1Body.data.every((cat: CategoryInterface) => cat.level === 1)).toBe(true);
   });
 
   it('should filter categories by isActive status', async () => {
@@ -128,11 +138,13 @@ describe('GET /categories', () => {
     });
 
     const activeResponse = await request(app).get('/categories').query({ isActive: true }).expect(200);
+    const activeBody = activeResponse.body as PaginatedCategoryResponse;
 
     const inactiveResponse = await request(app).get('/categories').query({ isActive: false }).expect(200);
+    const inactiveBody = inactiveResponse.body as PaginatedCategoryResponse;
 
-    expect(activeResponse.body.data.every((cat: any) => cat.isActive === true)).toBe(true);
-    expect(inactiveResponse.body.data.every((cat: any) => cat.isActive === false)).toBe(true);
+    expect(activeBody.data.every((cat: CategoryInterface) => cat.isActive)).toBe(true);
+    expect(inactiveBody.data.every((cat: CategoryInterface) => !cat.isActive)).toBe(true);
   });
 
   it('should search categories by text', async () => {
@@ -165,9 +177,10 @@ describe('GET /categories', () => {
     });
 
     const searchResponse = await request(app).get('/categories').query({ search: uniqueSearchTerm }).expect(200);
+    const searchBody = searchResponse.body as PaginatedCategoryResponse;
 
-    expect(searchResponse.body.data.length).toBeGreaterThan(0);
-    expect(searchResponse.body.data.some((cat: any) => cat.name.includes(uniqueSearchTerm))).toBe(true);
+    expect(searchBody.data.length).toBeGreaterThan(0);
+    expect(searchBody.data.some((cat: CategoryInterface) => cat.name.includes(uniqueSearchTerm))).toBe(true);
   });
 
   it('should return 400 for invalid query parameters', async () => {
@@ -198,8 +211,9 @@ describe('GET /categories', () => {
     await Category.updateOne({ _id: brand._id }, { $set: { deletedAt: new Date() } });
 
     const response = await request(app).get('/categories').expect(200);
+    const body = response.body as PaginatedCategoryResponse;
 
-    const deletedCategoryExists = response.body.data.some((cat: any) => cat._id === brand._id.toString());
+    const deletedCategoryExists = body.data.some((cat: CategoryInterface) => cat._id?.toString() === brand._id?.toString());
     expect(deletedCategoryExists).toBe(false);
   });
 });
