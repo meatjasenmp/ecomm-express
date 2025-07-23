@@ -28,6 +28,10 @@ export class CategoryService {
     return nameChanged || parentChanged;
   }
 
+  private needsAncestorUpdate(updateData: CategoryUpdateData, existingCategory: CategoryInterface): boolean {
+    return updateData.parentId !== undefined && updateData.parentId !== existingCategory.parentId;
+  }
+
   private buildValidationData(updateData: CategoryUpdateData, existingCategory: CategoryInterface, categoryId: string) {
     return {
       name: updateData.name || existingCategory.name,
@@ -175,8 +179,8 @@ export class CategoryService {
             }
           }
 
-          if (updateData.parentId !== undefined && updateData.parentId !== existingCategory.parentId) {
-            const newAncestors = await this.hierarchy.generateAncestors(updateData.parentId);
+          if (this.needsAncestorUpdate(updateData, existingCategory)) {
+            const newAncestors = await this.hierarchy.generateAncestors(updateData.parentId!);
             updateData = { ...updateData, ancestors: newAncestors };
           }
         }

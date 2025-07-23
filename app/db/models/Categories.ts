@@ -23,7 +23,7 @@ const categorySchema = new Schema<CategoryInterface>(
     parentId: { type: String, default: null },
     level: { type: Number, required: true, min: 0, max: 2 },
     path: { type: String, required: true },
-    ancestors: [{ type: String }], // Array of ancestor paths
+    ancestors: [{ type: String }],
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
     deletedAt: { type: Date, default: null },
