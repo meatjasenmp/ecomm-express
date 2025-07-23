@@ -4,6 +4,12 @@ import Category, { type CategoryInterface } from '../../db/models/Categories.ts'
 import { CategoryError, CategoryNotFoundError } from '../errors/CategoryErrors.ts';
 
 export class CategoryHierarchy {
+  private buildDescendantPathRegex(parentPath: string): string {
+    // Find all categories whose path starts with parentPath + "/" (i.e., direct and indirect children)
+    // The regex escapes special characters in the path to prevent regex injection
+    return `^${parentPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`;
+  }
+
   private createSlug(name: string): string {
     if (!name || !name.trim()) {
       throw new CategoryError('Generated slug is empty - invalid name provided');
@@ -49,7 +55,7 @@ export class CategoryHierarchy {
 
     const descendants = await Category.find(
       {
-        path: { $regex: `^${oldPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
+        path: { $regex: this.buildDescendantPathRegex(oldPath) },
         deletedAt: null,
       },
       'path _id',
@@ -121,9 +127,7 @@ export class CategoryHierarchy {
     if (!category) throw new CategoryNotFoundError(categoryId);
 
     const descendants = await Category.find({
-      // Find all categories whose path starts with this category's path + "/" (i.e., direct and indirect children)
-      // The regex escapes special characters in the path to prevent regex injection
-      path: { $regex: `^${category.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
+      path: { $regex: this.buildDescendantPathRegex(category.path) },
       deletedAt: null,
     })
       .sort({ level: 1, sortOrder: 1 })
