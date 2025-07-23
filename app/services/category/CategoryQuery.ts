@@ -10,7 +10,7 @@ export class CategoryQuery {
   async getCategoriesPaginated(options: CategoryQueryOptions = {}): Promise<PaginatedResult<CategoryInterface>> {
     const { page = 1, limit = 50, level, parentId, isActive, search } = options;
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { deletedAt: null };
 
     if (typeof level === 'number') query.level = level;
     if (parentId) query.parentId = parentId;
@@ -35,7 +35,7 @@ export class CategoryQuery {
   }
 
   async buildCategoryTree(rootLevel: number = 0, includeInactive: boolean = false): Promise<CategoryTreeNode[]> {
-    const matchStage: Record<string, unknown> = { level: rootLevel };
+    const matchStage: Record<string, unknown> = { level: rootLevel, deletedAt: null };
     if (!includeInactive) {
       matchStage.isActive = true;
     }
@@ -43,7 +43,7 @@ export class CategoryQuery {
     const rootCategories = await Category.find(matchStage).sort({ sortOrder: 1, name: 1 }).lean();
 
     const buildChildren = async (parentId: string, parentPath: string): Promise<CategoryTreeNode[]> => {
-      const childQuery: Record<string, unknown> = { parentId, ancestors: parentPath };
+      const childQuery: Record<string, unknown> = { parentId, ancestors: parentPath, deletedAt: null };
       if (!includeInactive) childQuery.isActive = true;
 
       const children = await Category.find(childQuery).sort({ sortOrder: 1, name: 1 }).lean();

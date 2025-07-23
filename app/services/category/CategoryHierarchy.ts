@@ -25,7 +25,7 @@ export class CategoryHierarchy {
   async generateAncestors(parentId: string | null): Promise<string[]> {
     if (!parentId) return [];
 
-    const parent = await Category.findById(parentId, 'path ancestors').lean();
+    const parent = await Category.findOne({ _id: parentId, deletedAt: null }, 'path ancestors').lean();
     if (!parent) throw new CategoryNotFoundError(parentId);
     return [...parent.ancestors, parent.path];
   }
@@ -35,14 +35,14 @@ export class CategoryHierarchy {
 
     if (!parentId) return slug;
 
-    const parent = await Category.findById(parentId, 'path level').lean();
+    const parent = await Category.findOne({ _id: parentId, deletedAt: null }, 'path level').lean();
     if (!parent) throw new CategoryNotFoundError(parentId);
 
     return `${parent.path}/${slug}`;
   }
 
   async updateDescendantPaths(categoryId: string, newPath: string): Promise<number> {
-    const category = await Category.findById(categoryId, 'path').lean();
+    const category = await Category.findOne({ _id: categoryId, deletedAt: null }, 'path').lean();
     if (!category) throw new CategoryNotFoundError(categoryId);
 
     const oldPath = category.path;
@@ -50,6 +50,7 @@ export class CategoryHierarchy {
     const descendants = await Category.find(
       {
         path: { $regex: `^${oldPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
+        deletedAt: null,
       },
       'path _id',
     ).lean();
@@ -78,7 +79,7 @@ export class CategoryHierarchy {
   async pathExists(path: string, excludeCategoryId?: string): Promise<boolean> {
     if (!path) return false;
 
-    const query: Record<string, unknown> = { path };
+    const query: Record<string, unknown> = { path, deletedAt: null };
 
     if (excludeCategoryId) {
       if (!mongoose.Types.ObjectId.isValid(excludeCategoryId)) {
@@ -96,13 +97,14 @@ export class CategoryHierarchy {
       throw new CategoryError('Invalid category ID format');
     }
 
-    const category = await Category.findById(categoryId, 'ancestors').lean();
+    const category = await Category.findOne({ _id: categoryId, deletedAt: null }, 'ancestors').lean();
     if (!category) throw new CategoryNotFoundError(categoryId);
 
     if (category.ancestors.length === 0) return [];
 
     const ancestors = await Category.find({
       path: { $in: category.ancestors },
+      deletedAt: null,
     })
       .sort({ level: 1 })
       .lean();
@@ -115,11 +117,12 @@ export class CategoryHierarchy {
       throw new CategoryError('Invalid category ID format');
     }
 
-    const category = await Category.findById(categoryId, 'path').lean();
+    const category = await Category.findOne({ _id: categoryId, deletedAt: null }, 'path').lean();
     if (!category) throw new CategoryNotFoundError(categoryId);
 
     const descendants = await Category.find({
       path: { $regex: `^${category.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/` },
+      deletedAt: null,
     })
       .sort({ level: 1, sortOrder: 1 })
       .lean();

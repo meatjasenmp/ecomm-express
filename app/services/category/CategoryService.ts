@@ -151,7 +151,7 @@ export class CategoryService {
 
     try {
       return await session.withTransaction(async () => {
-        const existingCategory = await Category.findById(categoryId).session(session);
+        const existingCategory = await Category.findOne({ _id: categoryId, deletedAt: null }).session(session);
         if (!existingCategory) {
           throw new CategoryNotFoundError(categoryId);
         }
@@ -226,7 +226,7 @@ export class CategoryService {
 
     try {
       await session.withTransaction(async () => {
-        const category = await Category.findById(categoryId).session(session);
+        const category = await Category.findOne({ _id: categoryId, deletedAt: null }).session(session);
         if (!category) {
           throw new CategoryNotFoundError(categoryId);
         }
@@ -242,11 +242,48 @@ export class CategoryService {
           throw new CategoryError(`Cannot delete category. ${productsUsingCategory} products are using this category.`);
         }
 
-        await Category.deleteOne({ _id: categoryId }).session(session);
+        await Category.updateOne(
+          { _id: categoryId },
+          { $set: { deletedAt: new Date() } },
+        ).session(session);
       });
     } catch (error) {
       if (error instanceof CategoryError) throw error;
       throw new CategoryError(`Failed to delete category: ${(error as Error).message}`);
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async restoreCategory(categoryId: string): Promise<CategoryInterface> {
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      throw new CategoryError('Invalid category ID format');
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+      return await session.withTransaction(async () => {
+        const category = await Category.findOne({ _id: categoryId, deletedAt: { $ne: null } }).session(session);
+        if (!category) {
+          throw new CategoryError('Category not found or not deleted');
+        }
+
+        const restoredCategory = await Category.findByIdAndUpdate(
+          categoryId,
+          { $set: { deletedAt: null } },
+          { new: true, session },
+        ).lean();
+
+        if (!restoredCategory) {
+          throw new CategoryError('Failed to restore category');
+        }
+
+        return restoredCategory as CategoryInterface;
+      });
+    } catch (error) {
+      if (error instanceof CategoryError) throw error;
+      throw new CategoryError(`Failed to restore category: ${(error as Error).message}`);
     } finally {
       await session.endSession();
     }

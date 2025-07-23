@@ -11,6 +11,7 @@ export interface CategoryInterface {
   ancestors: string[];
   isActive: boolean;
   sortOrder: number;
+  deletedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -25,6 +26,7 @@ const categorySchema = new Schema<CategoryInterface>(
     ancestors: [{ type: String }], // Array of ancestor paths
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    deletedAt: { type: Date, default: null },
   },
   {
     timestamps: true,
@@ -37,6 +39,7 @@ categorySchema.index({ level: 1, isActive: 1, sortOrder: 1 });
 categorySchema.index({ ancestors: 1 });
 categorySchema.index({ isActive: 1, sortOrder: 1 });
 categorySchema.index({ name: 'text', description: 'text' });
+categorySchema.index({ deletedAt: 1 });
 
 const Category = model('Category', categorySchema);
 export default Category;
