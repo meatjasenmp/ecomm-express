@@ -75,6 +75,24 @@ categoryRoutes.delete(
   },
 );
 
+categoryRoutes.patch(
+  '/restore-category/:id',
+  validateParams(IdParamsSchema),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    try {
+      const restoredCategory = await categoryService.restoreCategory(id);
+      res.status(200).json({
+        message: 'Category restored successfully',
+        category: restoredCategory,
+      });
+    } catch (err) {
+      handleCategoryError(err, res);
+    }
+  },
+);
+
 categoryRoutes.get(
   '/categories/tree',
   async (req: Request, res: Response): Promise<void> => {
