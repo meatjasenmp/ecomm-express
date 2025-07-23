@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import slugify from 'slugify';
 import Category, { type CategoryInterface } from '../../db/models/Categories.ts';
 import { CategoryError, CategoryNotFoundError } from '../errors/CategoryErrors.ts';
+import { createSlug } from '../../helpers/slugify.ts';
 
 export class CategoryHierarchy {
   private buildDescendantPathRegex(parentPath: string): string {
@@ -11,21 +11,11 @@ export class CategoryHierarchy {
   }
 
   private createSlug(name: string): string {
-    if (!name || !name.trim()) {
-      throw new CategoryError('Generated slug is empty - invalid name provided');
+    try {
+      return createSlug(name);
+    } catch (error) {
+      throw new CategoryError((error as Error).message);
     }
-
-    const slug = slugify(name, {
-      lower: true,
-      strict: true,
-      remove: /[*+~.()'";!:@]/g,
-    });
-
-    if (!slug) {
-      throw new CategoryError('Generated slug is empty - invalid name provided');
-    }
-
-    return slug;
   }
 
   async generateAncestors(parentId: string | null): Promise<string[]> {
