@@ -1,11 +1,8 @@
 import express from 'express';
-import publicRouter from './public';
-import productRoutes from './admin.products.ts';
-import categoryRoutes from './admin.categories.ts';
-import uploadRoutes from './admin.upload.ts';
+import publicRouter from './public.ts';
 
 const router = express.Router();
 
-router.use([publicRouter, productRoutes, categoryRoutes, uploadRoutes]);
+router.use([publicRouter]);
 
 export default router;
