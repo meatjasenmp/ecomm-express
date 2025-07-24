@@ -40,12 +40,8 @@ describe('CategoryService - Delete Operations', () => {
       expect(deletedCategory?.deletedAt).toBeInstanceOf(Date);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName: '',
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
-        subcategoryId: '',
       });
     });
 
@@ -82,9 +78,6 @@ describe('CategoryService - Delete Operations', () => {
         .rejects.toThrow('Cannot delete category with subcategories');
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName,
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
         subcategoryId: subcategory._id!.toString(),
@@ -127,12 +120,8 @@ describe('CategoryService - Delete Operations', () => {
       await Product.deleteOne({ _id: product._id });
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName: '',
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
-        subcategoryId: '',
       });
     });
 

@@ -29,12 +29,7 @@ describe('CategoryService - Validation Operations', () => {
       expect(result.errors).toHaveLength(0);
 
       setCategoryTestData({
-        brandName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: brand._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
 
@@ -62,12 +57,7 @@ describe('CategoryService - Validation Operations', () => {
       expect(result.errors[0]).toContain('Parent level (0) must be exactly one level below child level (2)');
 
       setCategoryTestData({
-        brandName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: brand._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
 

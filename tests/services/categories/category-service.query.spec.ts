@@ -50,9 +50,6 @@ describe('CategoryService - Query Operations', () => {
       expect(ancestors[1].level).toBe(1);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName,
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
         subcategoryId: subcategory._id!.toString(),
@@ -74,12 +71,7 @@ describe('CategoryService - Query Operations', () => {
       expect(ancestors).toHaveLength(0);
 
       setCategoryTestData({
-        brandName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: brand._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
 
@@ -128,9 +120,6 @@ describe('CategoryService - Query Operations', () => {
       expect(descendants[1].level).toBe(2);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName,
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
         subcategoryId: subcategory._id!.toString(),
@@ -189,9 +178,6 @@ describe('CategoryService - Query Operations', () => {
       expect(testSubcategoryNode.children).toHaveLength(0);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName,
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
         subcategoryId: subcategory._id!.toString(),
@@ -265,12 +251,8 @@ describe('CategoryService - Query Operations', () => {
       expect(level1CategoryExists).toBe(true);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName: '',
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
-        subcategoryId: '',
       });
     });
   });

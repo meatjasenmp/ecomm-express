@@ -33,12 +33,8 @@ describe('CategoryService - Update Operations', () => {
       ).rejects.toThrow(`Category with name "${firstCategoryName}" already exists`);
 
       setCategoryTestData({
-        brandName: firstCategoryName,
-        categoryName: secondCategoryName,
-        subcategoryName: '',
         brandId: firstCategory._id!.toString(),
         categoryId: secondCategory._id!.toString(),
-        subcategoryId: '',
       });
     });
 
@@ -71,12 +67,8 @@ describe('CategoryService - Update Operations', () => {
       ).rejects.toThrow(`Category with name "${deletedCategoryName}" already exists`);
 
       setCategoryTestData({
-        brandName: deletedCategoryName,
-        categoryName: activeCategoryName,
-        subcategoryName: '',
         brandId: deletedCategory._id!.toString(),
         categoryId: activeCategory._id!.toString(),
-        subcategoryId: '',
       });
     });
 
@@ -100,12 +92,7 @@ describe('CategoryService - Update Operations', () => {
       expect(updatedCategory.description).toBe('Updated description');
 
       setCategoryTestData({
-        brandName: categoryName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: category._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
   });

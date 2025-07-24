@@ -55,9 +55,6 @@ describe('CategoryService - Create Operations', () => {
       expect(subcategory.ancestors).toEqual([brand.path, category.path]);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName,
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
         subcategoryId: subcategory._id!.toString(),
@@ -88,12 +85,7 @@ describe('CategoryService - Create Operations', () => {
       ).rejects.toThrow();
 
       setCategoryTestData({
-        brandName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: brand._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
 
@@ -119,12 +111,7 @@ describe('CategoryService - Create Operations', () => {
       ).rejects.toThrow(`Category with name "${categoryName}" already exists`);
 
       setCategoryTestData({
-        brandName: categoryName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: firstCategory._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
 
@@ -152,12 +139,7 @@ describe('CategoryService - Create Operations', () => {
       ).rejects.toThrow(`Category with name "${categoryName}" already exists`);
 
       setCategoryTestData({
-        brandName: categoryName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: originalCategory._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
   });

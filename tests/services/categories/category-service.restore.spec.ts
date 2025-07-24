@@ -42,12 +42,8 @@ describe('CategoryService - Restore Operations', () => {
       expect(isRestored).toBe(true);
 
       setCategoryTestData({
-        brandName,
-        categoryName,
-        subcategoryName: '',
         brandId: brand._id!.toString(),
         categoryId: category._id!.toString(),
-        subcategoryId: '',
       });
     });
 
@@ -66,12 +62,7 @@ describe('CategoryService - Restore Operations', () => {
         .rejects.toThrow('Category not found or not deleted');
 
       setCategoryTestData({
-        brandName,
-        categoryName: '',
-        subcategoryName: '',
         brandId: brand._id!.toString(),
-        categoryId: '',
-        subcategoryId: '',
       });
     });
 

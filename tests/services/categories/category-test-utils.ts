@@ -2,12 +2,9 @@ import { faker } from '@faker-js/faker';
 import Category from '../../../app/db/models/Categories.ts';
 
 export type CategoryTestData = {
-  brandName: string;
-  categoryName: string;
-  subcategoryName: string;
-  brandId: string;
-  categoryId: string;
-  subcategoryId: string;
+  brandId?: string;
+  categoryId?: string;
+  subcategoryId?: string;
 };
 
 export const setupCategoryTestSuite = () => {
