@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Category, { type CategoryInterface } from '../../db/models/Categories.ts';
+import Product from '../../db/models/Products.ts';
 import { CategoryError, CategoryNotFoundError, InvalidHierarchyError } from '../errors/CategoryErrors.ts';
 import { CategoryValidator } from './CategoryValidator.ts';
 import { CategoryHierarchy } from './CategoryHierarchy.ts';
@@ -270,7 +271,6 @@ export class CategoryService {
           throw new CategoryError('Cannot delete category with subcategories. Delete subcategories first.');
         }
 
-        const Product = mongoose.model('Product');
         const productsUsingCategory = await Product.countDocuments({ categories: categoryId });
         if (productsUsingCategory > 0) {
           throw new CategoryError(`Cannot delete category. ${productsUsingCategory} products are using this category.`);
