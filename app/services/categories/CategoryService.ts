@@ -71,6 +71,22 @@ export class CategoryService {
     return errors;
   }
 
+  private async validateNameUniqueness(name: string, excludeCategoryId?: string): Promise<string[]> {
+    const errors: string[] = [];
+    const query: Record<string, unknown> = {
+      name: name,
+    };
+
+    if (excludeCategoryId) query._id = { $ne: excludeCategoryId };
+
+    const existingCategory = await Category.findOne(query);
+    if (existingCategory) {
+      errors.push(`Category with name "${name}" already exists`);
+    }
+
+    return errors;
+  }
+
   async validateCategoryHierarchy(categoryData: {
     name: string;
     parentId: string | null;
@@ -80,9 +96,12 @@ export class CategoryService {
     const errors: string[] = [];
 
     try {
+      const nameErrors = await this.validateNameUniqueness(categoryData.name, categoryData._id);
+      errors.push(...nameErrors);
+
       const levelErrors = this.validator.validateLevel(categoryData.level);
       errors.push(...levelErrors);
-      
+
       const rootLevelErrors = this.validator.validateRootLevelConstraints(categoryData.level, categoryData.parentId);
       errors.push(...rootLevelErrors);
 
@@ -92,10 +111,17 @@ export class CategoryService {
         if (!parentValidation.valid) {
           errors.push(parentValidation.error!);
         } else {
-          const parentLevelErrors = this.validator.validateParentLevel(parentValidation.parent!.level, categoryData.level);
+          const parentLevelErrors = this.validator.validateParentLevel(
+            parentValidation.parent!.level,
+            categoryData.level,
+          );
           errors.push(...parentLevelErrors);
-          
-          const pathErrors = await this.validatePathUniqueness(categoryData.name, categoryData.parentId, categoryData._id);
+
+          const pathErrors = await this.validatePathUniqueness(
+            categoryData.name,
+            categoryData.parentId,
+            categoryData._id,
+          );
           errors.push(...pathErrors);
         }
       }
@@ -250,10 +276,7 @@ export class CategoryService {
           throw new CategoryError(`Cannot delete category. ${productsUsingCategory} products are using this category.`);
         }
 
-        await Category.updateOne(
-          { _id: categoryId },
-          { $set: { deletedAt: new Date() } },
-        ).session(session);
+        await Category.updateOne({ _id: categoryId }, { $set: { deletedAt: new Date() } }).session(session);
       });
     } catch (error) {
       if (error instanceof CategoryError) throw error;
