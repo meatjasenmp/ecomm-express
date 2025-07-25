@@ -1,8 +1,8 @@
 import express from 'express';
-import publicRouter from './public.ts';
+import productRoutes from './products/index.ts';
 
 const router = express.Router();
 
-router.use([publicRouter]);
+router.use(productRoutes);
 
 export default router;
