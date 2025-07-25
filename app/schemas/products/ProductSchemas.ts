@@ -26,7 +26,6 @@ export const ProductCreateSchema = z.object({
   gender: GenderSchema,
   categories: z.array(z.string()).min(1, 'At least one category is required'),
   tags: z.array(z.string()).optional(),
-  slug: z.string().optional(),
   metaTitle: z.string().max(70).optional(),
   metaDescription: z.string().max(160).optional(),
   searchKeywords: z.array(z.string()).optional(),

@@ -27,7 +27,7 @@ export interface ProductInterface extends Document {
   sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt?: Date;
+  deletedAt?: Date | null;
 }
 
 const VariantSchema = new Schema(

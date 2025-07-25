@@ -88,10 +88,7 @@ export abstract class BaseService<T extends Document> {
     return mongoose.Types.ObjectId.isValid(id);
   }
 
-  private applyPopulations<Q>(
-    query: Q,
-    populations: string | string[],
-  ): Q {
+  applyPopulations<Q>(query: Q, populations: string | string[]): Q {
     const populationList = this.normalizePopulations(populations);
 
     populationList.forEach((pop) => {

@@ -7,7 +7,3 @@ export const createSlug = (text: string): string => {
     remove: /[*+~.()'"!:@]/g,
   });
 };
-
-export const createProductSlug = (title: string): string => {
-  return createSlug(title);
-};
