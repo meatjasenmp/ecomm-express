@@ -1,14 +1,21 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { type ParsedQs } from 'qs';
 import { ProductService } from '../services/ProductService.ts';
-import { type ProductCreateData, type ProductUpdateData } from '../schemas/products/ProductSchemas.ts';
+import {
+  type ProductCreateData,
+  type ProductUpdateData,
+} from '../schemas/products/ProductSchemas.ts';
 import { type ProductFilter } from '../services/types/product.types.ts';
 import { type QueryOptions } from '../services/types/base.types.ts';
 
 export class ProductController {
   private productService = new ProductService();
 
-  getPublicProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getPublicProducts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const filter: ProductFilter = {
         isPublished: true,
@@ -29,7 +36,11 @@ export class ProductController {
     }
   };
 
-  getProductBySlug = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getProductBySlug = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const { slug } = req.params;
       const options: QueryOptions = {
@@ -123,10 +134,11 @@ export class ProductController {
   private buildFilterFromQuery(query: ParsedQs): ProductFilter {
     const filter: ProductFilter = {};
 
-    if (typeof query.status === 'string') filter.status = query.status as ProductFilter['status'];
-    if (typeof query.productType === 'string') filter.productType = query.productType as ProductFilter['productType'];
-    if (typeof query.gender === 'string') filter.gender = query.gender as ProductFilter['gender'];
-    if (typeof query.brand === 'string') filter.brand = query.brand;
+    this.setStringField(filter, query, 'status');
+    this.setStringField(filter, query, 'productType');
+    this.setStringField(filter, query, 'gender');
+    this.setStringField(filter, query, 'brand');
+    this.setStringField(filter, query, 'search');
 
     const categories = this.parseCategoriesFromQuery(query.categories);
     if (categories) filter.categories = categories;
@@ -137,9 +149,16 @@ export class ProductController {
 
     if (typeof query.minPrice === 'string') filter.minPrice = parseFloat(query.minPrice);
     if (typeof query.maxPrice === 'string') filter.maxPrice = parseFloat(query.maxPrice);
-    if (typeof query.search === 'string') filter.search = query.search;
 
     return filter;
+  }
+
+  private setStringField<K extends keyof ProductFilter>(
+    filter: ProductFilter,
+    query: ParsedQs,
+    field: K,
+  ): void {
+    if (typeof query[field] === 'string') filter[field] = query[field] as ProductFilter[K];
   }
 
   private parseCategoriesFromQuery(categories: unknown): string[] | undefined {
