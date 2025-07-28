@@ -5,6 +5,7 @@ import { clearCollection } from '../helpers/database.ts';
 import { expectValidSlug, expectValidMongoId } from '../helpers/assertions.ts';
 import { NotFoundError } from '../../app/errors/ErrorTypes.ts';
 import { type ProductInterface } from '../../app/db/models/Product.ts';
+import '../../app/db/models/Category.ts';
 
 describe('ProductService - findBySlug', () => {
   let productService: ProductService;
@@ -40,9 +41,8 @@ describe('ProductService - findBySlug', () => {
   });
 
   it('should find product with populate options', async () => {
-    // TODO: Adjust this test based on your actual population needs
     const found = await productService.findBySlug('test-product-name', {
-      populate: [],
+      populate: ['categories'],
     });
 
     expect(found.id).toBe(existingProduct.id);
