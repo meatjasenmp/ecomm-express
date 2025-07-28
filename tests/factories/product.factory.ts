@@ -12,7 +12,7 @@ export const createProductData = (
   const colors = ['Black', 'White', 'Navy', 'Grey', 'Red', 'Blue'];
 
   return {
-    title: faker.commerce.productName(),
+    title: `${faker.commerce.productName()} ${uniqueId}`,
     description: faker.commerce.productDescription(),
     brand: faker.company.name().split(' ')[0], // First word only for cleaner brand names
     productType: faker.helpers.arrayElement(productTypes),
@@ -46,3 +46,8 @@ export const createPublishedProductData = (
     isPublished: true,
     ...overrides,
   });
+
+export const createMultipleProductsData = (count: number): ProductCreateData[] => {
+  const categoryId = new mongoose.Types.ObjectId().toString();
+  return Array.from({ length: count }, () => createProductData({ categories: [categoryId] }));
+};
