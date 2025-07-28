@@ -17,6 +17,10 @@ export class ProductService extends BaseService<ProductInterface> {
   protected model = Product;
   protected resourceName = 'Product';
 
+  protected getBaseFilter(): FilterQuery<ProductInterface> {
+    return { deletedAt: null };
+  }
+
   async findById(id: string, options?: Partial<QueryOptions>): Promise<ProductInterface> {
     return this.findByIdWithOptions(id, options);
   }
@@ -86,12 +90,7 @@ export class ProductService extends BaseService<ProductInterface> {
   }
 
   async restore(id: string): Promise<ProductInterface> {
-    const product = await this.model.findById(id);
-
-    if (!product) {
-      throw new NotFoundError(this.resourceName, id);
-    }
-
+    const product = await this.findByIdRaw(id);
     product.deletedAt = null;
     return product.save();
   }

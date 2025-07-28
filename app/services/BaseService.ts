@@ -6,6 +6,34 @@ export abstract class BaseService<T extends Document> {
   protected abstract model: Model<T>;
   protected abstract resourceName: string;
 
+  protected getBaseFilter(): FilterQuery<T> {
+    return {};
+  }
+
+  protected async findByIdRaw(id: string, options?: Partial<QueryOptions>): Promise<T> {
+    if (!this.isValidObjectId(id)) {
+      throw new NotFoundError(this.resourceName, id);
+    }
+
+    let query = this.model.findById(id);
+
+    if (options?.select) {
+      query = query.select(options.select) as typeof query;
+    }
+
+    if (options?.populate) {
+      query = this.applyPopulations(query, options.populate);
+    }
+
+    const document = await query.exec();
+
+    if (!document) {
+      throw new NotFoundError(this.resourceName, id);
+    }
+
+    return document;
+  }
+
   protected async findByIdWithOptions(
     id: string,
     options?: Partial<QueryOptions>,
@@ -14,7 +42,7 @@ export abstract class BaseService<T extends Document> {
       throw new NotFoundError(this.resourceName, id);
     }
 
-    let query = this.model.findById(id);
+    let query = this.model.findOne({ _id: id, ...this.getBaseFilter() });
 
     if (options?.select) {
       query = query.select(options.select) as typeof query;
