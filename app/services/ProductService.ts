@@ -2,16 +2,9 @@ import { type FilterQuery } from 'mongoose';
 import Product from '../db/models/Product.ts';
 import { type ProductInterface } from '../db/models/Product.ts';
 import { BaseService } from './BaseService.ts';
-import {
-  type QueryOptions,
-  type PaginatedResult,
-} from './types/base.types.ts';
+import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
 import { type ProductFilter } from './types/product.types.ts';
-import {
-  NotFoundError,
-  ValidationError,
-  DuplicateError,
-} from '../errors/ErrorTypes.ts';
+import { NotFoundError, ValidationError, DuplicateError } from '../errors/ErrorTypes.ts';
 import { createSlug } from '../helpers/slugify.ts';
 import {
   ProductCreateSchema,
@@ -24,17 +17,11 @@ export class ProductService extends BaseService<ProductInterface> {
   protected model = Product;
   protected resourceName = 'Product';
 
-  async findById(
-    id: string,
-    options?: Partial<QueryOptions>,
-  ): Promise<ProductInterface> {
+  async findById(id: string, options?: Partial<QueryOptions>): Promise<ProductInterface> {
     return this.findByIdWithOptions(id, options);
   }
 
-  async findBySlug(
-    slug: string,
-    options?: Partial<QueryOptions>,
-  ): Promise<ProductInterface> {
+  async findBySlug(slug: string, options?: Partial<QueryOptions>): Promise<ProductInterface> {
     const query = this.model.findOne({ slug, deletedAt: null });
 
     if (options?.select) query.select(options.select);
@@ -75,10 +62,7 @@ export class ProductService extends BaseService<ProductInterface> {
     return product.save();
   }
 
-  async update(
-    id: string,
-    input: ProductUpdateData,
-  ): Promise<ProductInterface> {
+  async update(id: string, input: ProductUpdateData): Promise<ProductInterface> {
     const validatedData = await this.validateUpdateInput(input);
 
     const product = await this.findById(id);
@@ -112,9 +96,7 @@ export class ProductService extends BaseService<ProductInterface> {
     return product.save();
   }
 
-  private buildProductFilter(
-    filter: ProductFilter,
-  ): FilterQuery<ProductInterface> {
+  private buildProductFilter(filter: ProductFilter): FilterQuery<ProductInterface> {
     const mongoFilter: FilterQuery<ProductInterface> = {
       deletedAt: null,
     };
@@ -149,10 +131,7 @@ export class ProductService extends BaseService<ProductInterface> {
       ];
     });
 
-    const priceFilter = this.buildPriceFilter(
-      filter.minPrice,
-      filter.maxPrice,
-    );
+    const priceFilter = this.buildPriceFilter(filter.minPrice, filter.maxPrice);
     if (priceFilter) mongoFilter['variants.price'] = priceFilter;
 
     return mongoFilter;
@@ -184,9 +163,7 @@ export class ProductService extends BaseService<ProductInterface> {
     return priceFilter;
   }
 
-  private async validateCreateInput(
-    input: ProductCreateData,
-  ): Promise<ProductCreateData> {
+  private async validateCreateInput(input: ProductCreateData): Promise<ProductCreateData> {
     const result = ProductCreateSchema.safeParse(input);
 
     if (!result.success) {
@@ -200,9 +177,7 @@ export class ProductService extends BaseService<ProductInterface> {
     return result.data;
   }
 
-  private async validateUpdateInput(
-    input: ProductUpdateData,
-  ): Promise<ProductUpdateData> {
+  private async validateUpdateInput(input: ProductUpdateData): Promise<ProductUpdateData> {
     const result = ProductUpdateSchema.safeParse(input);
 
     if (!result.success) {
@@ -216,10 +191,7 @@ export class ProductService extends BaseService<ProductInterface> {
     return result.data;
   }
 
-  private async checkSlugUniqueness(
-    slug: string,
-    excludeId?: string,
-  ): Promise<void> {
+  private async checkSlugUniqueness(slug: string, excludeId?: string): Promise<void> {
     const filter: FilterQuery<ProductInterface> = { slug };
 
     if (excludeId) filter._id = { $ne: excludeId };

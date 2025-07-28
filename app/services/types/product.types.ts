@@ -1,4 +1,8 @@
-import { type ProductStatus, type ProductType, type Gender } from '../../schemas/products/ProductSchemas.ts';
+import {
+  type ProductStatus,
+  type ProductType,
+  type Gender,
+} from '../../schemas/products/ProductSchemas.ts';
 
 export type ProductFilter = {
   status?: ProductStatus;

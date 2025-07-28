@@ -57,10 +57,7 @@ export class InternalServerError extends BaseError {
   readonly statusCode = 500;
   readonly errorCode = 'INTERNAL_SERVER_ERROR';
 
-  constructor(
-    message: string = 'Internal server error',
-    context?: ErrorContext,
-  ) {
+  constructor(message: string = 'Internal server error', context?: ErrorContext) {
     super(message, context);
   }
 }

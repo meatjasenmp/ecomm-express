@@ -133,9 +133,7 @@ ProductSchema.virtual('totalInventory').get(function () {
 ProductSchema.virtual('priceRange').get(function () {
   if (!this.variants?.length) return null;
 
-  const prices = this.variants
-    .map((v) => v.price)
-    .filter((p) => p !== undefined);
+  const prices = this.variants.map((v) => v.price).filter((p) => p !== undefined);
   if (!prices.length) return null;
 
   const min = Math.min(...prices);
@@ -149,9 +147,7 @@ ProductSchema.virtual('availableSizes').get(function () {
 
   return [
     ...new Set(
-      this.variants
-        .filter((v) => v.isActive && (v.quantity || 0) > 0)
-        .map((v) => v.size),
+      this.variants.filter((v) => v.isActive && (v.quantity || 0) > 0).map((v) => v.size),
     ),
   ].sort();
 });
@@ -161,9 +157,7 @@ ProductSchema.virtual('availableColors').get(function () {
 
   return [
     ...new Set(
-      this.variants
-        .filter((v) => v.isActive && (v.quantity || 0) > 0)
-        .map((v) => v.color),
+      this.variants.filter((v) => v.isActive && (v.quantity || 0) > 0).map((v) => v.color),
     ),
   ].sort();
 });

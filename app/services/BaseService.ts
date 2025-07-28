@@ -1,9 +1,6 @@
 import mongoose, { Model, Document, type FilterQuery } from 'mongoose';
 import { NotFoundError, DatabaseError } from '../errors/ErrorTypes.ts';
-import {
-  type QueryOptions,
-  type PaginatedResult,
-} from './types/base.types.ts';
+import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
 
 export abstract class BaseService<T extends Document> {
   protected abstract model: Model<T>;
@@ -74,13 +71,10 @@ export abstract class BaseService<T extends Document> {
         },
       };
     } catch {
-      throw new DatabaseError(
-        `find ${this.resourceName} with pagination`,
-        {
-          filter,
-          options,
-        },
-      );
+      throw new DatabaseError(`find ${this.resourceName} with pagination`, {
+        filter,
+        options,
+      });
     }
   }
 
