@@ -26,7 +26,7 @@ export class ProductService extends BaseService<ProductInterface> {
   }
 
   async findBySlug(slug: string, options?: Partial<QueryOptions>): Promise<ProductInterface> {
-    const query = this.model.findOne({ slug, deletedAt: null });
+    const query = this.model.findOne({ slug, ...this.getBaseFilter() });
 
     if (options?.select) query.select(options.select);
 
@@ -97,7 +97,7 @@ export class ProductService extends BaseService<ProductInterface> {
 
   private buildProductFilter(filter: ProductFilter): FilterQuery<ProductInterface> {
     const mongoFilter: FilterQuery<ProductInterface> = {
-      deletedAt: null,
+      ...this.getBaseFilter(),
     };
 
     this.applyFilter(filter, mongoFilter, 'status', (value, mf) => {
