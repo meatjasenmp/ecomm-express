@@ -40,25 +40,21 @@ describe('CategoryService - findById', () => {
     const found = await categoryService.findById(existingCategory.id, {
       populate: [],
     });
-
     expect(found.id).toBe(existingCategory.id);
   });
 
   it('should throw NotFoundError for non-existent ID', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
-
     await expect(categoryService.findById(fakeId)).rejects.toThrow(NotFoundError);
   });
 
   it('should throw NotFoundError for invalid ID format', async () => {
     const invalidId = 'invalid-id';
-
     await expect(categoryService.findById(invalidId)).rejects.toThrow();
   });
 
   it('should not find soft deleted category', async () => {
     await categoryService.softDelete(existingCategory.id);
-
     await expect(categoryService.findById(existingCategory.id)).rejects.toThrow(NotFoundError);
   });
 });

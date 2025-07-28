@@ -1,6 +1,7 @@
 import mongoose, { Model, Document, type FilterQuery } from 'mongoose';
-import { NotFoundError, DatabaseError } from '../errors/ErrorTypes.ts';
+import { NotFoundError, DatabaseError, ValidationError } from '../errors/ErrorTypes.ts';
 import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
+import { BaseQueryOptionsSchema } from '../schemas/query/QuerySchemas.ts';
 
 export abstract class BaseService<T extends Document> {
   protected abstract model: Model<T>;
@@ -124,5 +125,19 @@ export abstract class BaseService<T extends Document> {
   private normalizePopulations(populations: string | string[]): string[] {
     if (Array.isArray(populations)) return populations;
     return [populations];
+  }
+
+  protected validateQueryOptions(options: Partial<QueryOptions>): QueryOptions {
+    const result = BaseQueryOptionsSchema.safeParse(options);
+
+    if (!result.success) {
+      const errors = result.error.issues[0];
+      throw new ValidationError(errors.message, {
+        field: errors.path.join('.'),
+        issues: result.error.issues,
+      });
+    }
+
+    return result.data;
   }
 }

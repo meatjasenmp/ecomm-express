@@ -3,7 +3,6 @@ import Product from '../db/models/Product.ts';
 import { type ProductInterface } from '../db/models/Product.ts';
 import { BaseService } from './BaseService.ts';
 import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
-import { type ProductFilter } from './types/product.types.ts';
 import { NotFoundError, ValidationError, DuplicateError } from '../errors/ErrorTypes.ts';
 import { createSlug } from '../helpers/slugify.ts';
 import {
@@ -12,6 +11,12 @@ import {
   type ProductCreateData,
   type ProductUpdateData,
 } from '../schemas/products/ProductSchemas.ts';
+import {
+  ProductFilterSchema,
+  ProductQueryOptionsSchema,
+  type ProductFilterData,
+  type ProductQueryOptionsData,
+} from '../schemas/query/ProductFilterSchema.ts';
 
 export class ProductService extends BaseService<ProductInterface> {
   protected model = Product;
@@ -44,11 +49,14 @@ export class ProductService extends BaseService<ProductInterface> {
   }
 
   async findAll(
-    filter: ProductFilter,
-    options: QueryOptions,
+    filter: ProductFilterData,
+    options: ProductQueryOptionsData,
   ): Promise<PaginatedResult<ProductInterface>> {
-    const mongoFilter = this.buildProductFilter(filter);
-    return this.findWithPagination(mongoFilter, options);
+    const validatedFilter = this.validateProductFilter(filter);
+    const validatedOptions = this.validateProductQueryOptions(options);
+
+    const mongoFilter = this.buildProductFilter(validatedFilter);
+    return this.findWithPagination(mongoFilter, validatedOptions);
   }
 
   async create(input: ProductCreateData): Promise<ProductInterface> {
@@ -95,7 +103,7 @@ export class ProductService extends BaseService<ProductInterface> {
     return product.save();
   }
 
-  private buildProductFilter(filter: ProductFilter): FilterQuery<ProductInterface> {
+  private buildProductFilter(filter: ProductFilterData): FilterQuery<ProductInterface> {
     const mongoFilter: FilterQuery<ProductInterface> = {
       ...this.getBaseFilter(),
     };
@@ -136,12 +144,12 @@ export class ProductService extends BaseService<ProductInterface> {
     return mongoFilter;
   }
 
-  private applyFilter<K extends keyof ProductFilter>(
-    filter: ProductFilter,
+  private applyFilter<K extends keyof ProductFilterData>(
+    filter: ProductFilterData,
     mongoFilter: FilterQuery<ProductInterface>,
     key: K,
     handler: (
-      value: NonNullable<ProductFilter[K]>,
+      value: NonNullable<ProductFilterData[K]>,
       filter: FilterQuery<ProductInterface>,
     ) => void,
   ): void {
@@ -210,5 +218,35 @@ export class ProductService extends BaseService<ProductInterface> {
 
     if (isBeingPublished) validatedData.publishedAt = new Date();
     if (isBeingUnpublished) validatedData.publishedAt = undefined;
+  }
+
+  private validateProductFilter(filter: ProductFilterData): ProductFilterData {
+    const result = ProductFilterSchema.safeParse(filter);
+
+    if (!result.success) {
+      const errors = result.error.issues[0];
+      throw new ValidationError(errors.message, {
+        field: errors.path.join('.'),
+        issues: result.error.issues,
+      });
+    }
+
+    return result.data;
+  }
+
+  private validateProductQueryOptions(
+    options: ProductQueryOptionsData,
+  ): ProductQueryOptionsData {
+    const result = ProductQueryOptionsSchema.safeParse(options);
+
+    if (!result.success) {
+      const errors = result.error.issues[0];
+      throw new ValidationError(errors.message, {
+        field: errors.path.join('.'),
+        issues: result.error.issues,
+      });
+    }
+
+    return result.data;
   }
 }

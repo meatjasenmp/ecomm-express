@@ -3,7 +3,11 @@ import { CategoryService } from '../../app/services/CategoryService.ts';
 import { createCategoryData } from '../factories/category.factory.ts';
 import { clearCollection } from '../helpers/database.ts';
 import { expectValidSlug, expectValidMongoId } from '../helpers/assertions.ts';
-import { NotFoundError, ValidationError, DuplicateError } from '../../app/errors/ErrorTypes.ts';
+import {
+  NotFoundError,
+  ValidationError,
+  DuplicateError,
+} from '../../app/errors/ErrorTypes.ts';
 import { type CategoryInterface } from '../../app/db/models/Category.ts';
 
 describe('CategoryService - Update', () => {
@@ -62,7 +66,7 @@ describe('CategoryService - Update', () => {
 
   it('should unpublish a published category', async () => {
     await categoryService.update(existingCategory.id, { isPublished: true });
-    
+
     const updateData = { isPublished: false };
     const updatedCategory = await categoryService.update(existingCategory.id, updateData);
 
@@ -79,19 +83,15 @@ describe('CategoryService - Update', () => {
 
   it('should throw ValidationError for invalid data', async () => {
     const invalidData = { name: '' };
-
-    await expect(
-      categoryService.update(existingCategory.id, invalidData)
-    ).rejects.toThrow(ValidationError);
+    await expect(categoryService.update(existingCategory.id, invalidData)).rejects.toThrow(
+      ValidationError,
+    );
   });
 
   it('should throw DuplicateError when updating to existing slug', async () => {
-    await categoryService.create(
-      createCategoryData({ name: 'Another Category' })
-    );
-
+    await categoryService.create(createCategoryData({ name: 'Another Category' }));
     await expect(
-      categoryService.update(existingCategory.id, { name: 'Another Category' })
+      categoryService.update(existingCategory.id, { name: 'Another Category' }),
     ).rejects.toThrow(DuplicateError);
   });
 });

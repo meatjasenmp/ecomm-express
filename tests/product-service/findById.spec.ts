@@ -5,6 +5,7 @@ import { clearCollection } from '../helpers/database.ts';
 import { expectValidSlug, expectValidMongoId } from '../helpers/assertions.ts';
 import { NotFoundError } from '../../app/errors/ErrorTypes.ts';
 import { type ProductInterface } from '../../app/db/models/Product.ts';
+import '../../app/db/models/Category.ts';
 
 describe('ProductService - findById', () => {
   let productService: ProductService;
@@ -38,9 +39,8 @@ describe('ProductService - findById', () => {
   });
 
   it('should find product with populate options', async () => {
-    // TODO: Update this test when product model has relations
     const found = await productService.findById(existingProduct.id, {
-      populate: [],
+      populate: ['categories'],
     });
 
     expect(found.id).toBe(existingProduct.id);

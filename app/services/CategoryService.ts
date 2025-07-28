@@ -3,7 +3,6 @@ import Category from '../db/models/Category.ts';
 import { type CategoryInterface } from '../db/models/Category.ts';
 import { BaseService } from './BaseService.ts';
 import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
-import { type CategoryFilter } from './types/category.types.ts';
 import { NotFoundError, ValidationError, DuplicateError } from '../errors/ErrorTypes.ts';
 import { createSlug } from '../helpers/slugify.ts';
 import {
@@ -12,6 +11,12 @@ import {
   type CategoryCreateData,
   type CategoryUpdateData,
 } from '../schemas/categories/CategorySchemas.ts';
+import {
+  CategoryFilterSchema,
+  CategoryQueryOptionsSchema,
+  type CategoryFilterData,
+  type CategoryQueryOptionsData,
+} from '../schemas/query/CategoryFilterSchema.ts';
 
 export class CategoryService extends BaseService<CategoryInterface> {
   protected model = Category;
@@ -44,11 +49,14 @@ export class CategoryService extends BaseService<CategoryInterface> {
   }
 
   async findAll(
-    filter: CategoryFilter,
-    options: QueryOptions,
+    filter: CategoryFilterData,
+    options: CategoryQueryOptionsData,
   ): Promise<PaginatedResult<CategoryInterface>> {
-    const mongoFilter = this.buildCategoryFilter(filter);
-    return this.findWithPagination(mongoFilter, options);
+    const validatedFilter = this.validateCategoryFilter(filter);
+    const validatedOptions = this.validateCategoryQueryOptions(options);
+
+    const mongoFilter = this.buildCategoryFilter(validatedFilter);
+    return this.findWithPagination(mongoFilter, validatedOptions);
   }
 
   async create(input: CategoryCreateData): Promise<CategoryInterface> {
@@ -95,7 +103,7 @@ export class CategoryService extends BaseService<CategoryInterface> {
     return category.save();
   }
 
-  private buildCategoryFilter(filter: CategoryFilter): FilterQuery<CategoryInterface> {
+  private buildCategoryFilter(filter: CategoryFilterData): FilterQuery<CategoryInterface> {
     const mongoFilter: FilterQuery<CategoryInterface> = {
       ...this.getBaseFilter(),
     };
@@ -113,21 +121,18 @@ export class CategoryService extends BaseService<CategoryInterface> {
     });
 
     this.applyFilter(filter, mongoFilter, 'search', (value, mf) => {
-      mf.$or = [
-        { name: new RegExp(value, 'i') },
-        { description: new RegExp(value, 'i') },
-      ];
+      mf.$or = [{ name: new RegExp(value, 'i') }, { description: new RegExp(value, 'i') }];
     });
 
     return mongoFilter;
   }
 
-  private applyFilter<K extends keyof CategoryFilter>(
-    filter: CategoryFilter,
+  private applyFilter<K extends keyof CategoryFilterData>(
+    filter: CategoryFilterData,
     mongoFilter: FilterQuery<CategoryInterface>,
     key: K,
     handler: (
-      value: NonNullable<CategoryFilter[K]>,
+      value: NonNullable<CategoryFilterData[K]>,
       filter: FilterQuery<CategoryInterface>,
     ) => void,
   ): void {
@@ -183,5 +188,35 @@ export class CategoryService extends BaseService<CategoryInterface> {
 
     if (isBeingPublished) validatedData.publishedAt = new Date();
     if (isBeingUnpublished) validatedData.publishedAt = undefined;
+  }
+
+  private validateCategoryFilter(filter: CategoryFilterData): CategoryFilterData {
+    const result = CategoryFilterSchema.safeParse(filter);
+
+    if (!result.success) {
+      const errors = result.error.issues[0];
+      throw new ValidationError(errors.message, {
+        field: errors.path.join('.'),
+        issues: result.error.issues,
+      });
+    }
+
+    return result.data;
+  }
+
+  private validateCategoryQueryOptions(
+    options: CategoryQueryOptionsData,
+  ): CategoryQueryOptionsData {
+    const result = CategoryQueryOptionsSchema.safeParse(options);
+
+    if (!result.success) {
+      const errors = result.error.issues[0];
+      throw new ValidationError(errors.message, {
+        field: errors.path.join('.'),
+        issues: result.error.issues,
+      });
+    }
+
+    return result.data;
   }
 }
