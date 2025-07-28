@@ -110,8 +110,6 @@ const ProductSchema = new Schema(
 ProductSchema.index({ brand: 1, productType: 1 });
 ProductSchema.index({ categories: 1, status: 1 });
 ProductSchema.index({ isPublished: 1, publishedAt: -1 });
-ProductSchema.index({ slug: 1 });
-ProductSchema.index({ 'variants.sku': 1 });
 ProductSchema.index({ tags: 1 });
 ProductSchema.index({ searchKeywords: 1 });
 ProductSchema.index({ deletedAt: 1 });
