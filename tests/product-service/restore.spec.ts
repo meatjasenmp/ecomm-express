@@ -43,7 +43,7 @@ describe('ProductService - restore', () => {
 
   it('should appear in findAll results after restore', async () => {
     const anotherProduct = await productService.create(createProductData());
-    
+
     await productService.restore(product.id);
 
     const result = await productService.findAll({}, { page: 1, limit: 10 });
@@ -55,13 +55,11 @@ describe('ProductService - restore', () => {
 
   it('should throw NotFoundError for non-existent product', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
-
     await expect(productService.restore(fakeId)).rejects.toThrow(NotFoundError);
   });
 
   it('should throw NotFoundError for invalid ID format', async () => {
     const invalidId = 'invalid-id';
-
     await expect(productService.restore(invalidId)).rejects.toThrow(NotFoundError);
   });
 

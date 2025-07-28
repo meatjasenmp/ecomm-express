@@ -57,10 +57,8 @@ describe('ProductService - findBySlug', () => {
 
   it('should not find soft deleted product by slug', async () => {
     await productService.softDelete(existingProduct.id);
-
     await expect(productService.findBySlug('test-product-name')).rejects.toThrow(
       NotFoundError,
     );
   });
-
 });

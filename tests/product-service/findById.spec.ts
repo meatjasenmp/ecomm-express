@@ -48,20 +48,16 @@ describe('ProductService - findById', () => {
 
   it('should throw NotFoundError for non-existent ID', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
-
     await expect(productService.findById(fakeId)).rejects.toThrow(NotFoundError);
   });
 
   it('should throw NotFoundError for invalid ID format', async () => {
     const invalidId = 'invalid-id';
-
     await expect(productService.findById(invalidId)).rejects.toThrow();
   });
 
   it('should not find soft deleted product', async () => {
-    // Soft delete the product
     await productService.softDelete(existingProduct.id);
-
     await expect(productService.findById(existingProduct.id)).rejects.toThrow(NotFoundError);
   });
 });

@@ -45,7 +45,6 @@ describe('ProductService: Create', () => {
 
   it('should throw ValidationError for invalid data', async () => {
     const invalidData = createProductData({ title: '' });
-
     await expect(productService.create(invalidData)).rejects.toThrow(ValidationError);
   });
 

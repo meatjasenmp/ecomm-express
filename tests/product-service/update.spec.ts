@@ -50,7 +50,6 @@ describe('ProductService: Update', () => {
     const updated = await productService.update(existingProduct.id, {
       description: 'Only updating description',
     });
-
     expect(updated.slug).toBe(existingProduct.slug);
   });
 
@@ -76,7 +75,6 @@ describe('ProductService: Update', () => {
 
   it('should throw NotFoundError for non-existent product', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
-
     await expect(productService.update(fakeId, { title: 'New Title' })).rejects.toThrow(
       NotFoundError,
     );
@@ -90,7 +88,6 @@ describe('ProductService: Update', () => {
 
   it('should throw DuplicateError when updating to existing slug', async () => {
     await productService.create(createProductData({ title: 'Another Product' }));
-
     await expect(
       productService.update(existingProduct.id, { title: 'Another Product' }),
     ).rejects.toThrow(DuplicateError);

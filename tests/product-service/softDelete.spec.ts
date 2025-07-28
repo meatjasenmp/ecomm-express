@@ -27,19 +27,17 @@ describe('ProductService - softDelete', () => {
 
   it('should not be findable after soft delete', async () => {
     await productService.softDelete(product.id);
-
     await expect(productService.findById(product.id)).rejects.toThrow(NotFoundError);
   });
 
   it('should not be findable by slug after soft delete', async () => {
     await productService.softDelete(product.id);
-
     await expect(productService.findBySlug(product.slug)).rejects.toThrow(NotFoundError);
   });
 
   it('should not appear in findAll results after soft delete', async () => {
     const anotherProduct = await productService.create(createProductData());
-    
+
     await productService.softDelete(product.id);
 
     const result = await productService.findAll({}, { page: 1, limit: 10 });
@@ -51,19 +49,16 @@ describe('ProductService - softDelete', () => {
 
   it('should throw NotFoundError for non-existent product', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
-
     await expect(productService.softDelete(fakeId)).rejects.toThrow(NotFoundError);
   });
 
   it('should throw NotFoundError for invalid ID format', async () => {
     const invalidId = 'invalid-id';
-
     await expect(productService.softDelete(invalidId)).rejects.toThrow(NotFoundError);
   });
 
   it('should handle soft deleting already soft deleted product', async () => {
     await productService.softDelete(product.id);
-
     await expect(productService.softDelete(product.id)).rejects.toThrow(NotFoundError);
   });
 
