@@ -2,11 +2,7 @@ import { type FilterQuery } from 'mongoose';
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
 import Image from '../db/models/Image.ts';
-import {
-  type ImageInterface,
-  type ImageVariants,
-  type ImageVariant,
-} from '../db/models/Image.ts';
+import { type ImageInterface, type ImageVariants } from '../db/models/Image.ts';
 import { BaseService } from './BaseService.ts';
 import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
 import { ValidationError, DatabaseError } from '../errors/ErrorTypes.ts';
@@ -18,15 +14,30 @@ import {
   type ImageUpdateData,
 } from '../schemas/images/ImageSchemas.ts';
 
-export interface ImageFilter {
+export type ImageFilter = {
   mimeType?: string;
   minSize?: number;
   maxSize?: number;
   search?: string;
-}
+};
+
+export type UploadedFile = {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size: number;
+  fieldname: string;
+  encoding: string;
+  destination: string;
+  filename: string;
+  path: string;
+  stream: NodeJS.ReadableStream | null;
+  key: string;
+  location: string;
+};
 
 export class ImageService extends BaseService<ImageInterface> {
-  protected model = Image;
+  model = Image;
   protected resourceName = 'Image';
 
   protected getBaseFilter(): FilterQuery<ImageInterface> {
@@ -92,9 +103,7 @@ export class ImageService extends BaseService<ImageInterface> {
     }
   }
 
-  async createFromUpload(
-    file: Express.Multer.File & { key: string; location: string },
-  ): Promise<ImageInterface> {
+  async createFromUpload(file: UploadedFile): Promise<ImageInterface> {
     const variants = await this.generateImageVariants(file);
 
     const imageData: ImageCreateData = {
@@ -107,9 +116,7 @@ export class ImageService extends BaseService<ImageInterface> {
     return this.create(imageData);
   }
 
-  async createMultipleFromUploads(
-    files: (Express.Multer.File & { key: string; location: string })[],
-  ): Promise<ImageInterface[]> {
+  async createMultipleFromUploads(files: UploadedFile[]): Promise<ImageInterface[]> {
     const images: Promise<ImageInterface>[] = files.map((file) => this.createFromUpload(file));
     return Promise.all(images);
   }
@@ -125,8 +132,10 @@ export class ImageService extends BaseService<ImageInterface> {
 
     if (filter.minSize !== undefined || filter.maxSize !== undefined) {
       mongoFilter['variants.original.size'] = {};
-      if (filter.minSize !== undefined) mongoFilter['variants.original.size'].$gte = filter.minSize;
-      if (filter.maxSize !== undefined) mongoFilter['variants.original.size'].$lte = filter.maxSize;
+      if (filter.minSize !== undefined)
+        mongoFilter['variants.original.size'].$gte = filter.minSize;
+      if (filter.maxSize !== undefined)
+        mongoFilter['variants.original.size'].$lte = filter.maxSize;
     }
 
     if (filter.search) {
@@ -182,9 +191,7 @@ export class ImageService extends BaseService<ImageInterface> {
     return result.data;
   }
 
-  private async generateImageVariants(
-    file: Express.Multer.File & { key: string; location: string },
-  ): Promise<ImageVariants> {
+  private async generateImageVariants(file: UploadedFile): Promise<ImageVariants> {
     const baseKey = file.key.replace(/\.[^/.]+$/, ''); // Remove extension
     const extension = file.key.split('.').pop();
 

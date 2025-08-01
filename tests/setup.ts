@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 
 beforeAll(async () => {
   config({ path: '.env.local' });
+  
   const uri = process.env.ATLAS_TEST_URI;
   if (!uri) {
     throw new Error('ATLAS_TEST_URI found in environment variables');

@@ -1,5 +1,5 @@
-import * as multer from 'multer';
-import * as multerS3 from 'multer-s3';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
 import { s3Client, S3_CONFIG } from '../config/aws.ts';
 import {
   ALLOWED_IMAGE_TYPES,
@@ -50,6 +50,3 @@ export const uploadToS3 = multer({
 
 export const uploadSingle = uploadToS3.single('image');
 export const uploadMultiple = uploadToS3.array('images', MAX_FILES_PER_UPLOAD);
-export const uploadFields = uploadToS3.fields([
-  { name: 'images', maxCount: MAX_FILES_PER_UPLOAD },
-]);

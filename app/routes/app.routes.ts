@@ -5,8 +5,8 @@ import imageRoutes from './images/index.ts';
 
 const router = express.Router();
 
-router.use(productRoutes);
-router.use(categoryRoutes);
-router.use('/images', imageRoutes);
+router.use('/api', productRoutes);
+router.use('/api', categoryRoutes);
+router.use('/api/images', imageRoutes);
 
 export default router;

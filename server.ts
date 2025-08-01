@@ -18,11 +18,17 @@ app.use(express.json({ strict: true }));
 app.use(router);
 app.use(errorMiddleware);
 
-try {
-  await mongoose.connect(connectionString);
-  app.listen(port, () => {
-    console.log(`Server is up and running on port ${port}!`);
-  });
-} catch (err) {
-  console.error(err);
+export default app;
+
+if (process.env.NODE_ENV !== 'test') {
+  (async () => {
+    try {
+      await mongoose.connect(connectionString);
+      app.listen(port, () => {
+        console.log(`Server is up and running on port ${port}!`);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  })();
 }
