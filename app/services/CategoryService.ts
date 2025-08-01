@@ -233,8 +233,4 @@ export class CategoryService extends BaseService<CategoryInterface> {
     return category.save();
   }
 
-  async getImageForCategory(id: string): Promise<string | null> {
-    const category = await this.findById(id, { select: 'image' });
-    return category.image ? category.image.toString() : null;
-  }
 }

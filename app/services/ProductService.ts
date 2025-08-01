@@ -274,8 +274,4 @@ export class ProductService extends BaseService<ProductInterface> {
     return product.save();
   }
 
-  async getImagesForProduct(id: string): Promise<string[]> {
-    const product = await this.findById(id, { select: 'images' });
-    return product.images.map((id) => id.toString());
-  }
 }

@@ -14,21 +14,15 @@ import { type QueryOptions } from '../services/types/base.types.ts';
 export class ProductController {
   private productService = new ProductService();
 
-  getPublicProducts = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const filter: ProductFilterData = {
-        isPublished: true,
-        ...this.buildFilterFromQuery(req.query),
-      };
+      const filter: ProductFilterData = this.buildFilterFromQuery(req.query);
 
       const options: ProductQueryOptionsData = {
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 20,
         sort: 'createdAt',
+        populate: ['categories', 'images'],
       };
 
       const result = await this.productService.findAll(filter, options);
@@ -46,7 +40,7 @@ export class ProductController {
     try {
       const { slug } = req.params;
       const options: QueryOptions = {
-        populate: ['categories'],
+        populate: ['categories', 'images'],
       };
 
       const product = await this.productService.findBySlug(slug, options);
@@ -56,28 +50,11 @@ export class ProductController {
     }
   };
 
-  getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const filter: ProductFilterData = this.buildFilterFromQuery(req.query);
-
-      const options: ProductQueryOptionsData = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 20,
-        sort: 'createdAt',
-      };
-
-      const result = await this.productService.findAll(filter, options);
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  };
-
   getProductById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
       const options: QueryOptions = {
-        populate: ['categories'],
+        populate: ['categories', 'images'],
       };
 
       const product = await this.productService.findById(id, options);
@@ -126,6 +103,57 @@ export class ProductController {
       const { id } = req.params;
       const product = await this.productService.restore(id);
 
+      res.json(product);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  addProductImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { imageIds } = req.body;
+
+      if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+        res.status(400).json({ error: 'imageIds array is required' });
+        return;
+      }
+
+      const product = await this.productService.addImages(id, imageIds);
+      res.json(product);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  removeProductImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { imageIds } = req.body;
+
+      if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+        res.status(400).json({ error: 'imageIds array is required' });
+        return;
+      }
+
+      const product = await this.productService.removeImages(id, imageIds);
+      res.json(product);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  replaceProductImages = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { imageIds } = req.body;
+
+      if (!imageIds || !Array.isArray(imageIds)) {
+        res.status(400).json({ error: 'imageIds array is required' });
+        return;
+      }
+
+      const product = await this.productService.replaceImages(id, imageIds);
       res.json(product);
     } catch (error) {
       next(error);

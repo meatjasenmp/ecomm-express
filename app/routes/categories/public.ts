@@ -1,16 +1,16 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
-import { ProductController } from '../../controllers/ProductController.ts';
+import { CategoryController } from '../../controllers/CategoryController.ts';
 
 const router = express.Router();
-const productController = new ProductController();
+const categoryController = new CategoryController();
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
   req.query.isPublished = 'true';
-  return productController.getAllProducts(req, res, next);
+  return categoryController.getAllCategories(req, res, next);
 });
 
 router.get('/:slug', (req: Request, res: Response, next: NextFunction) =>
-  productController.getProductBySlug(req, res, next),
+  categoryController.getCategoryBySlug(req, res, next),
 );
 
 export default router;
