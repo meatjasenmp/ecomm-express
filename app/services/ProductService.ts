@@ -17,6 +17,7 @@ import {
   type ProductFilterData,
   type ProductQueryOptionsData,
 } from '../schemas/query/ProductFilterSchema.ts';
+import type { ObjectId } from 'mongodb';
 
 export class ProductService extends BaseService<ProductInterface> {
   protected model = Product;
@@ -248,5 +249,33 @@ export class ProductService extends BaseService<ProductInterface> {
     }
 
     return result.data;
+  }
+
+  async addImages(id: string, imageIds: string[]): Promise<ProductInterface> {
+    const product = await this.findById(id);
+    const uniqueImageIds = [
+      ...new Set([...product.images.map((id) => id.toString()), ...imageIds]),
+    ];
+    product.images = uniqueImageIds.map((id) => id as unknown as ObjectId);
+    return product.save();
+  }
+
+  async removeImages(id: string, imageIds: string[]): Promise<ProductInterface> {
+    const product = await this.findById(id);
+    product.images = product.images.filter(
+      (imageId) => !imageIds.includes(imageId.toString()),
+    );
+    return product.save();
+  }
+
+  async replaceImages(id: string, imageIds: string[]): Promise<ProductInterface> {
+    const product = await this.findById(id);
+    product.images = imageIds.map((id) => id as unknown as ObjectId);
+    return product.save();
+  }
+
+  async getImagesForProduct(id: string): Promise<string[]> {
+    const product = await this.findById(id, { select: 'images' });
+    return product.images.map((id) => id.toString());
   }
 }

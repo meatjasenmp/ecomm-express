@@ -17,6 +17,7 @@ import {
   type CategoryFilterData,
   type CategoryQueryOptionsData,
 } from '../schemas/query/CategoryFilterSchema.ts';
+import type { ObjectId } from 'mongodb';
 
 export class CategoryService extends BaseService<CategoryInterface> {
   protected model = Category;
@@ -218,5 +219,22 @@ export class CategoryService extends BaseService<CategoryInterface> {
     }
 
     return result.data;
+  }
+
+  async setImage(id: string, imageId: string): Promise<CategoryInterface> {
+    const category = await this.findById(id);
+    category.image = imageId as unknown as ObjectId;
+    return category.save();
+  }
+
+  async removeImage(id: string): Promise<CategoryInterface> {
+    const category = await this.findById(id);
+    category.image = undefined;
+    return category.save();
+  }
+
+  async getImageForCategory(id: string): Promise<string | null> {
+    const category = await this.findById(id, { select: 'image' });
+    return category.image ? category.image.toString() : null;
   }
 }

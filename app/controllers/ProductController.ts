@@ -5,7 +5,10 @@ import {
   type ProductCreateData,
   type ProductUpdateData,
 } from '../schemas/products/ProductSchemas.ts';
-import { type ProductFilter } from '../services/types/product.types.ts';
+import {
+  type ProductFilterData,
+  type ProductQueryOptionsData,
+} from '../schemas/query/ProductFilterSchema.ts';
 import { type QueryOptions } from '../services/types/base.types.ts';
 
 export class ProductController {
@@ -17,16 +20,15 @@ export class ProductController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const filter: ProductFilter = {
+      const filter: ProductFilterData = {
         isPublished: true,
         ...this.buildFilterFromQuery(req.query),
       };
 
-      const options: QueryOptions = {
+      const options: ProductQueryOptionsData = {
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 20,
-        sort: (req.query.sort as string) || '-publishedAt',
-        populate: ['categories'],
+        sort: 'createdAt',
       };
 
       const result = await this.productService.findAll(filter, options);
@@ -56,13 +58,12 @@ export class ProductController {
 
   getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const filter: ProductFilter = this.buildFilterFromQuery(req.query);
+      const filter: ProductFilterData = this.buildFilterFromQuery(req.query);
 
-      const options: QueryOptions = {
+      const options: ProductQueryOptionsData = {
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 20,
-        sort: (req.query.sort as string) || '-createdAt',
-        populate: ['categories'],
+        sort: 'createdAt',
       };
 
       const result = await this.productService.findAll(filter, options);
@@ -131,8 +132,8 @@ export class ProductController {
     }
   };
 
-  private buildFilterFromQuery(query: ParsedQs): ProductFilter {
-    const filter: ProductFilter = {};
+  private buildFilterFromQuery(query: ParsedQs): ProductFilterData {
+    const filter: ProductFilterData = {};
 
     this.setStringField(filter, query, 'status');
     this.setStringField(filter, query, 'productType');
@@ -153,12 +154,12 @@ export class ProductController {
     return filter;
   }
 
-  private setStringField<K extends keyof ProductFilter>(
-    filter: ProductFilter,
+  private setStringField<K extends keyof ProductFilterData>(
+    filter: ProductFilterData,
     query: ParsedQs,
     field: K,
   ): void {
-    if (typeof query[field] === 'string') filter[field] = query[field] as ProductFilter[K];
+    if (typeof query[field] === 'string') filter[field] = query[field] as ProductFilterData[K];
   }
 
   private parseCategoriesFromQuery(categories: unknown): string[] | undefined {
