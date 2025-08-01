@@ -1,7 +1,12 @@
 import { type FilterQuery } from 'mongoose';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
 import Image from '../db/models/Image.ts';
-import { type ImageInterface } from '../db/models/Image.ts';
+import {
+  type ImageInterface,
+  type ImageVariants,
+  type ImageVariant,
+} from '../db/models/Image.ts';
 import { BaseService } from './BaseService.ts';
 import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
 import { ValidationError, DatabaseError } from '../errors/ErrorTypes.ts';
@@ -43,12 +48,7 @@ export class ImageService extends BaseService<ImageInterface> {
   async create(input: ImageCreateData): Promise<ImageInterface> {
     const validatedData = await this.validateCreateInput(input);
 
-    const s3Url = `${S3_CONFIG.baseUrl}/${validatedData.s3Key}`;
-
-    const image = new this.model({
-      ...validatedData,
-      s3Url,
-    });
+    const image = new this.model(validatedData);
 
     try {
       return await image.save();
@@ -78,7 +78,14 @@ export class ImageService extends BaseService<ImageInterface> {
     const image = await this.findByIdRaw(id);
 
     try {
-      await this.deleteFromS3(image.s3Key);
+      if (image.variants) {
+        await Promise.all([
+          this.deleteFromS3(image.variants.original.s3Key),
+          this.deleteFromS3(image.variants.thumbnail.s3Key),
+          this.deleteFromS3(image.variants.medium.s3Key),
+          this.deleteFromS3(image.variants.large.s3Key),
+        ]);
+      }
       await this.model.findByIdAndDelete(id);
     } catch (error) {
       throw new DatabaseError(`hard delete ${this.resourceName}`, { id, error });
@@ -88,13 +95,13 @@ export class ImageService extends BaseService<ImageInterface> {
   async createFromUpload(
     file: Express.Multer.File & { key: string; location: string },
   ): Promise<ImageInterface> {
+    const variants = await this.generateImageVariants(file);
+
     const imageData: ImageCreateData = {
       filename: file.key.split('/').pop() || file.originalname,
       originalName: file.originalname,
       mimeType: file.mimetype,
-      size: file.size,
-      s3Key: file.key,
-      s3Bucket: S3_CONFIG.bucket,
+      variants,
     };
 
     return this.create(imageData);
@@ -117,9 +124,9 @@ export class ImageService extends BaseService<ImageInterface> {
     }
 
     if (filter.minSize !== undefined || filter.maxSize !== undefined) {
-      mongoFilter.size = {};
-      if (filter.minSize !== undefined) mongoFilter.size.$gte = filter.minSize;
-      if (filter.maxSize !== undefined) mongoFilter.size.$lte = filter.maxSize;
+      mongoFilter['variants.original.size'] = {};
+      if (filter.minSize !== undefined) mongoFilter['variants.original.size'].$gte = filter.minSize;
+      if (filter.maxSize !== undefined) mongoFilter['variants.original.size'].$lte = filter.maxSize;
     }
 
     if (filter.search) {
@@ -173,5 +180,70 @@ export class ImageService extends BaseService<ImageInterface> {
     }
 
     return result.data;
+  }
+
+  private async generateImageVariants(
+    file: Express.Multer.File & { key: string; location: string },
+  ): Promise<ImageVariants> {
+    const baseKey = file.key.replace(/\.[^/.]+$/, ''); // Remove extension
+    const extension = file.key.split('.').pop();
+
+    const sizes = {
+      thumbnail: { width: 150, height: 150 },
+      medium: { width: 500, height: 500 },
+      large: { width: 1200, height: 1200 },
+    };
+
+    const variants: Partial<ImageVariants> = {};
+
+    const originalBuffer = await sharp(file.buffer).jpeg({ quality: 90 }).toBuffer();
+
+    const originalMetadata = await sharp(originalBuffer).metadata();
+    const originalKey = `${baseKey}_original.${extension}`;
+    await this.uploadToS3(originalBuffer, originalKey, file.mimetype);
+
+    variants.original = {
+      s3Key: originalKey,
+      s3Url: `${S3_CONFIG.baseUrl}/${originalKey}`,
+      width: originalMetadata.width!,
+      height: originalMetadata.height!,
+      size: originalBuffer.length,
+    };
+
+    for (const [variantName, { width, height }] of Object.entries(sizes)) {
+      const variantBuffer = await sharp(file.buffer)
+        .resize(width, height, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 85 })
+        .toBuffer();
+
+      const variantMetadata = await sharp(variantBuffer).metadata();
+      const variantKey = `${baseKey}_${variantName}.${extension}`;
+      await this.uploadToS3(variantBuffer, variantKey, 'image/jpeg');
+
+      variants[variantName as keyof typeof sizes] = {
+        s3Key: variantKey,
+        s3Url: `${S3_CONFIG.baseUrl}/${variantKey}`,
+        width: variantMetadata.width!,
+        height: variantMetadata.height!,
+        size: variantBuffer.length,
+      };
+    }
+
+    return variants as ImageVariants;
+  }
+
+  private async uploadToS3(buffer: Buffer, key: string, mimeType: string): Promise<void> {
+    try {
+      const command = new PutObjectCommand({
+        Bucket: S3_CONFIG.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: mimeType,
+      });
+
+      await s3Client.send(command);
+    } catch (error) {
+      throw new DatabaseError('upload to S3', { key, error });
+    }
   }
 }
