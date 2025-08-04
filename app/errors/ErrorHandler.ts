@@ -23,8 +23,4 @@ export class ErrorHandler {
       error: error.toJSON(),
     };
   }
-
-  static isOperationalError(error: unknown): boolean {
-    return error instanceof BaseError;
-  }
 }
