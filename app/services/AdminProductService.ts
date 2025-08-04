@@ -1,7 +1,7 @@
 import { type FilterQuery } from 'mongoose';
 import { type ProductInterface } from '../db/models/Product.ts';
 import { BaseProductService } from './BaseProductService.ts';
-import { type QueryOptions } from './types/base.types.ts';
+import { type QueryOptions, type PaginatedResult } from './types/base.types.ts';
 import { ValidationError, DuplicateError } from '../errors/ErrorTypes.ts';
 import { createSlug } from '../helpers/slugify.ts';
 import {
@@ -10,11 +10,18 @@ import {
   type ProductCreateData,
   type ProductUpdateData,
 } from '../schemas/products/ProductSchemas.ts';
+import {
+  type ProductFilterData,
+  type ProductQueryOptionsData,
+} from '../schemas/query/ProductFilterSchema.ts';
 import type { ObjectId } from 'mongodb';
 
 export class AdminProductService extends BaseProductService {
-  protected getBaseFilter(): FilterQuery<ProductInterface> {
-    return {};
+  async findAll(
+    filter: ProductFilterData,
+    options: ProductQueryOptionsData,
+  ): Promise<PaginatedResult<ProductInterface>> {
+    return super.findAll(filter, options, { deletedAt: null });
   }
 
   async findById(id: string, options?: Partial<QueryOptions>): Promise<ProductInterface> {

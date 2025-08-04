@@ -14,22 +14,25 @@ import {
 export abstract class BaseProductService extends BaseService<ProductInterface> {
   protected model = Product;
   protected resourceName = 'Product';
-  protected abstract getBaseFilter(): FilterQuery<ProductInterface>;
 
   async findAll(
     filter: ProductFilterData,
     options: ProductQueryOptionsData,
+    baseFilter: FilterQuery<ProductInterface> = {}
   ): Promise<PaginatedResult<ProductInterface>> {
     const validatedFilter = this.validateProductFilter(filter);
     const validatedOptions = this.validateProductQueryOptions(options);
 
-    const mongoFilter = this.buildProductFilter(validatedFilter);
+    const mongoFilter = this.buildProductFilter(validatedFilter, baseFilter);
     return this.findWithPagination(mongoFilter, validatedOptions);
   }
 
-  protected buildProductFilter(filter: ProductFilterData): FilterQuery<ProductInterface> {
+  buildProductFilter(
+    filter: ProductFilterData,
+    baseFilter: FilterQuery<ProductInterface> = {}
+  ): FilterQuery<ProductInterface> {
     const mongoFilter: FilterQuery<ProductInterface> = {
-      ...this.getBaseFilter(),
+      ...baseFilter,
     };
 
     this.applyFilter(filter, mongoFilter, 'status', (value, mf) => {
@@ -94,7 +97,7 @@ export abstract class BaseProductService extends BaseService<ProductInterface> {
     return priceFilter;
   }
 
-  private validateProductFilter(filter: ProductFilterData): ProductFilterData {
+  validateProductFilter(filter: ProductFilterData): ProductFilterData {
     const result = ProductFilterSchema.safeParse(filter);
 
     if (!result.success) {
@@ -108,7 +111,7 @@ export abstract class BaseProductService extends BaseService<ProductInterface> {
     return result.data;
   }
 
-  private validateProductQueryOptions(
+  validateProductQueryOptions(
     options: ProductQueryOptionsData,
   ): ProductQueryOptionsData {
     const result = ProductQueryOptionsSchema.safeParse(options);
