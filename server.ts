@@ -1,8 +1,6 @@
 import express, { type Express } from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import router from './app/routes/app.routes';
-import errorMiddleware from './app/middleware/errorMiddleware.ts';
 
 const app: Express = express();
 const connectionString = process.env.ATLAS_URI || '';
@@ -16,19 +14,4 @@ app.use(
 );
 app.use(express.json({ strict: true }));
 app.use(router);
-app.use(errorMiddleware);
-
 export default app;
-
-if (process.env.NODE_ENV !== 'test') {
-  (async () => {
-    try {
-      await mongoose.connect(connectionString);
-      app.listen(port, () => {
-        console.log(`Server is up and running on port ${port}!`);
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  })();
-}
