@@ -1,7 +1,6 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import router from './app/routes/app.routes';
 
 const app: Express = express();
 const connectionString = process.env.ATLAS_URI || '';
@@ -14,7 +13,6 @@ app.use(
   }),
 );
 app.use(express.json({ strict: true }));
-app.use(router);
 export default app;
 
 (async () => {

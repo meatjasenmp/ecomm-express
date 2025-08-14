@@ -1,4 +1,5 @@
 # Code style
+
 - Use ES modules (import/export) syntax, not CommonJS (require)
 - Destructure imports when possible (eg. import { foo } from 'bar')
 - Declare type imports (eg. import type { Foo } from 'bar')
@@ -11,8 +12,10 @@
 - Strong emphasis on immutability
 - Strong emphasis on functional programming principles
 - Strong emphasis on separation of concerns
-- 
+-
 
 # Workflow
+
 - Be sure to typecheck when you’re done making a series of code changes
+- Run prettier to format the code when you’re done making a series of code changes
 - Do not go beyond the scope of the task (eg. If I say create a model, then create a model, not the schema, controller, etc.)

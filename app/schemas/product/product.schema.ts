@@ -25,4 +25,27 @@ export const productSchema = z.object({
   categories: z.array(objectIdSchema).default([]),
 });
 
+export const productCreateSchema = productSchema.refine(
+  (data) => !data.discountPrice || data.discountPrice < data.price,
+  {
+    message: 'Discount price must be less than regular price',
+    path: ['discountPrice'],
+  },
+);
+
+export const productUpdateSchema = productSchema.partial().refine(
+  (data) => {
+    if (data.price !== undefined && data.discountPrice !== undefined) {
+      return data.discountPrice < data.price;
+    }
+    return true;
+  },
+  {
+    message: 'Discount price must be less than regular price',
+    path: ['discountPrice'],
+  },
+);
+
 export type ProductSchema = z.infer<typeof productSchema>;
+export type ProductCreateSchema = z.infer<typeof productCreateSchema>;
+export type ProductUpdateSchema = z.infer<typeof productUpdateSchema>;
