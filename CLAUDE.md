@@ -12,7 +12,7 @@
 - Strong emphasis on immutability
 - Strong emphasis on functional programming principles
 - Strong emphasis on separation of concerns
--
+- Avoid unnecessary comments, but use comments to explain complex logic
 
 # Workflow
 
