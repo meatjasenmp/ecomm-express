@@ -18,7 +18,11 @@ const config: Config = {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  collectCoverageFrom: ['app/**/*.ts', '!app/**/*.d.ts', '!app/**/index.ts'],
+  collectCoverageFrom: [
+    'app/**/*.ts',
+    '!app/**/*.d.ts',
+    '!app/**/index.ts',
+  ],
   setupFiles: ['<rootDir>/tests/env-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 30000,

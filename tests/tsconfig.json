@@ -10,12 +10,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": [
-    "../app/**/*",
-    "./**/*"
-  ],
-  "exclude": [
-    "../node_modules",
-    "../dist"
-  ]
+  "include": ["../app/**/*", "./**/*"],
+  "exclude": ["../node_modules", "../dist"]
 }

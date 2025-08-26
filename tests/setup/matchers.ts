@@ -2,7 +2,11 @@ import { expect } from '@jest/globals';
 import type { ZodIssue, SafeParseError } from 'zod/v3';
 
 expect.extend({
-  toHaveZodIssue(received: SafeParseError<unknown>, path: string[], message?: string) {
+  toHaveZodIssue(
+    received: SafeParseError<unknown>,
+    path: string[],
+    message?: string,
+  ) {
     if (!received.error) {
       return {
         pass: false,
@@ -24,7 +28,8 @@ expect.extend({
     if (message && issue.message !== message) {
       return {
         pass: false,
-        message: () => `Expected message "${message}" but got "${issue.message}"`,
+        message: () =>
+          `Expected message "${message}" but got "${issue.message}"`,
       };
     }
 
