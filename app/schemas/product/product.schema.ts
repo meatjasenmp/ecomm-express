@@ -15,11 +15,11 @@ export const productSchema = z.object({
   price: z
     .number()
     .int('Price must be an integer (in cents)')
-    .nonnegative('Price cannot be negative'),
+    .min(1, 'Price must be at least $0.01'),
   discountPrice: z
     .number()
     .int('Discount price must be an integer (in cents)')
-    .nonnegative('Discount price cannot be negative')
+    .min(1, 'Price must be at least $0.01')
     .optional(),
   images: z.array(objectIdSchema).default([]),
   categories: z.array(objectIdSchema).default([]),

@@ -6,13 +6,13 @@ export const productFactories = {
   minimal: (overrides: Partial<ProductSchema> = {}) => ({
     title: faker.commerce.productName(),
     description: faker.lorem.sentences(2, ' '),
-    price: faker.number.int({ min: 100, max: 50000 }),
+    price: faker.number.int({ min: 1, max: 50000 }),
     ...overrides,
   }),
 
   complete: (overrides: Partial<ProductSchema> = {}) => {
-    const price = faker.number.int({ min: 1000, max: 50000 });
-    const discountPrice = faker.number.int({ min: 100, max: price - 1 });
+    const price = faker.number.int({ min: 1, max: 50000 });
+    const discountPrice = faker.number.int({ min: 1, max: price - 1 });
 
     return {
       title: faker.commerce.productName(),
@@ -82,5 +82,10 @@ export const invalidProducts = {
   decimalPrice: () => ({
     ...productFactories.minimal(),
     price: 19.99,
+  }),
+
+  minPrice: () => ({
+    ...productFactories.minimal(),
+    price: 0,
   }),
 };

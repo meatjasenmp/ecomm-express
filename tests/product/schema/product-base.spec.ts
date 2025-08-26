@@ -14,16 +14,20 @@ describe('productSchema', () => {
       if (result.success) {
         expect(result.data.title).toBeDefined();
         expect(typeof result.data.title).toBe('string');
-        expect(result.data.title.length).toBeGreaterThan(0);
+        expect(result.data.title.length).toBeGreaterThan(
+          VALIDATION_CONSTANTS.MIN_TITLE_LENGTH,
+        );
 
         expect(result.data.description).toBeDefined();
         expect(typeof result.data.description).toBe('string');
-        expect(result.data.description.length).toBeGreaterThanOrEqual(10);
+        expect(result.data.description.length).toBeGreaterThanOrEqual(
+          VALIDATION_CONSTANTS.MIN_DESCRIPTION_LENGTH,
+        );
 
         expect(result.data.price).toBeDefined();
         expect(typeof result.data.price).toBe('number');
         expect(Number.isInteger(result.data.price)).toBe(true);
-        expect(result.data.price).toBeGreaterThanOrEqual(0);
+        expect(result.data.price).toBeGreaterThanOrEqual(VALIDATION_CONSTANTS.MIN_PRICE);
 
         expect(result.data.images).toEqual([]);
         expect(result.data.categories).toEqual([]);
@@ -41,21 +45,27 @@ describe('productSchema', () => {
       if (result.success) {
         expect(result.data.title).toBeDefined();
         expect(typeof result.data.title).toBe('string');
-        expect(result.data.title.length).toBeGreaterThan(0);
+        expect(result.data.title.length).toBeGreaterThan(
+          VALIDATION_CONSTANTS.MIN_TITLE_LENGTH,
+        );
 
         expect(result.data.description).toBeDefined();
         expect(typeof result.data.description).toBe('string');
-        expect(result.data.description.length).toBeGreaterThanOrEqual(10);
+        expect(result.data.description.length).toBeGreaterThanOrEqual(
+          VALIDATION_CONSTANTS.MIN_DESCRIPTION_LENGTH,
+        );
 
         expect(result.data.price).toBeDefined();
         expect(typeof result.data.price).toBe('number');
         expect(Number.isInteger(result.data.price)).toBe(true);
-        expect(result.data.price).toBeGreaterThan(0);
+        expect(result.data.price).toBeGreaterThan(VALIDATION_CONSTANTS.MIN_PRICE);
 
         expect(result.data.discountPrice).toBeDefined();
         expect(typeof result.data.discountPrice).toBe('number');
         expect(Number.isInteger(result.data.discountPrice)).toBe(true);
-        expect(result.data.discountPrice).toBeGreaterThan(0);
+        expect(result.data.discountPrice).toBeGreaterThan(
+          VALIDATION_CONSTANTS.MIN_DISCOUNT_PRICE,
+        );
         expect(result.data.discountPrice).toBeLessThan(result.data.price);
 
         expect(result.data.images).toBeDefined();
