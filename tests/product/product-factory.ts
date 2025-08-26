@@ -10,15 +10,20 @@ export const productFactories = {
     ...overrides,
   }),
 
-  complete: (overrides: Partial<ProductSchema> = {}) => ({
-    title: faker.commerce.productName(),
-    description: faker.lorem.paragraph(),
-    price: faker.number.int({ min: 500, max: 50000 }),
-    discountPrice: faker.number.int({ min: 100, max: 40000 }),
-    images: [validObjectId, validObjectId],
-    categories: [validObjectId],
-    ...overrides,
-  }),
+  complete: (overrides: Partial<ProductSchema> = {}) => {
+    const price = faker.number.int({ min: 1000, max: 50000 });
+    const discountPrice = faker.number.int({ min: 100, max: price - 1 });
+
+    return {
+      title: faker.commerce.productName(),
+      description: faker.lorem.paragraph(),
+      price,
+      discountPrice,
+      images: [validObjectId, validObjectId],
+      categories: [validObjectId],
+      ...overrides,
+    };
+  },
 };
 
 export const productBoundaries = {
