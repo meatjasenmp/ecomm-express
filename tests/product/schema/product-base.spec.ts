@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import { productSchema } from '../../../app/schemas/product/product.schema.ts';
-import { productFactories } from '../product-factory.ts';
+import { productFactories } from '../../factories/product-factory.ts';
 import { VALIDATION_CONSTANTS } from '../../constants/test-constants.ts';
 
 describe('productSchema', () => {
