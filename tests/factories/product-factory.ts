@@ -29,7 +29,6 @@ export const productFactories = {
 export const productBoundaries = {
   minTitle: (overrides: Partial<ProductSchema> = {}) => ({
     ...productFactories.minimal(overrides),
-    title: 'A',
     description: 'A'.repeat(10),
   }),
 
@@ -58,6 +57,17 @@ export const invalidProducts = {
   emptyTitle: () => ({
     ...productFactories.minimal(),
     title: '',
+  }),
+
+  longTitle: () => ({
+    ...productFactories.minimal(),
+    title: 'A'.repeat(201),
+  }),
+
+  whiteSpaces: (overrides: Partial<ProductSchema> = {}) => ({
+    ...productFactories.minimal(overrides),
+    title: '   ',
+    description: 'A'.repeat(10),
   }),
 
   shortDescription: () => ({

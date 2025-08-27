@@ -22,11 +22,13 @@ export const PRODUCT_VALIDATION_MESSAGES = {
 } as const;
 
 export const productSchema = z.object({
-  title: z
-    .string()
-    .min(1, PRODUCT_VALIDATION_MESSAGES.TITLE.MIN_LENGTH)
-    .max(200, PRODUCT_VALIDATION_MESSAGES.TITLE.MAX_LENGTH)
-    .trim(),
+  title: z.preprocess(
+    (val) => (typeof val === 'string' ? val.trim() : val),
+    z
+      .string()
+      .min(1, PRODUCT_VALIDATION_MESSAGES.TITLE.MIN_LENGTH)
+      .max(200, PRODUCT_VALIDATION_MESSAGES.TITLE.MAX_LENGTH),
+  ),
   description: z
     .string()
     .min(10, PRODUCT_VALIDATION_MESSAGES.DESCRIPTION.MIN_LENGTH)
