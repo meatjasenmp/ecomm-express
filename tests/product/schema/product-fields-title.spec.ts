@@ -19,8 +19,8 @@ describe('productSchema - Title Field Validation', () => {
 
   it('should reject a whitespace-only string', () => {
     const result = productSchema.safeParse(invalidProducts.whiteSpaces());
-    expect(result.success).toBe(false);
 
+    expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].path).toEqual(['title']);
       expect(result.error.issues[0].message).toBe(

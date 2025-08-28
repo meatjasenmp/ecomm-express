@@ -38,9 +38,14 @@ export const productBoundaries = {
     description: 'A'.repeat(5000),
   }),
 
+  maxPrice: (overrides: Partial<ProductSchema> = {}) => ({
+    ...productFactories.minimal(overrides),
+    price: 999999999,
+  }),
+
   minPrice: (overrides: Partial<ProductSchema> = {}) => ({
     ...productFactories.minimal(overrides),
-    price: 0,
+    price: 1,
   }),
 
   maxDiscount: (overrides: Partial<ProductSchema> = {}) => {
