@@ -75,6 +75,11 @@ export const invalidProducts = {
     description: 'Too short',
   }),
 
+  longDescription: () => ({
+    ...productFactories.minimal(),
+    description: 'A'.repeat(5001),
+  }),
+
   negativePrice: () => ({
     ...productFactories.minimal(),
     price: -100,
