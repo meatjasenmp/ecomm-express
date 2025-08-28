@@ -70,6 +70,11 @@ export const invalidProducts = {
     description: 'A'.repeat(10),
   }),
 
+  descriptionWhiteSpaces: (overrides: Partial<ProductSchema> = {}) => ({
+    ...productFactories.minimal(overrides),
+    description: '   ',
+  }),
+
   shortDescription: () => ({
     ...productFactories.minimal(),
     description: 'Too short',

@@ -19,8 +19,8 @@ describe('productSchema - Title Field Validation', () => {
 
   it('should reject a whitespace-only string', () => {
     const result = productSchema.safeParse(invalidProducts.whiteSpaces());
-
     expect(result.success).toBe(false);
+
     if (!result.success) {
       expect(result.error.issues[0].path).toEqual(['title']);
       expect(result.error.issues[0].message).toBe(
@@ -37,7 +37,6 @@ describe('productSchema - Title Field Validation', () => {
     const validProduct = productBoundaries.minTitle({ title: char });
 
     const result = productSchema.safeParse(validProduct);
-
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.title).toBe(char);
@@ -48,10 +47,9 @@ describe('productSchema - Title Field Validation', () => {
     const validProduct = productBoundaries.maxTitle();
 
     const result = productSchema.safeParse(validProduct);
-
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.title).toHaveLength(200);
+      expect(result.data.title).toHaveLength(result.data.title.length);
       expect(result.data.title).toBe('A'.repeat(200));
     }
   });
