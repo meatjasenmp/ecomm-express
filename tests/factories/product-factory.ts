@@ -1,6 +1,7 @@
 import { type ProductSchema } from '../../app/schemas/product/product.schema.ts';
 import { faker } from '@faker-js/faker';
-import { validObjectId } from '../setup/schema-helpers.ts';
+
+const validObjectId = '507f1f77bcf86cd799439011';
 
 export const productFactories = {
   minimal: (overrides: Partial<ProductSchema> = {}) => ({
