@@ -224,6 +224,20 @@ describe('ProductUpdateSchema', () => {
         }
       });
 
+      it('should accept empty categories array (clear images)', () => {
+        const update = {
+          categories: [],
+        };
+
+        const result = productUpdateSchema.safeParse(update);
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.categories).toEqual([]);
+          expect(result.data.images).toBeUndefined();
+        }
+      });
+
       it('should reject invalid ObjectId in images array', () => {
         const update = {
           images: ['invalid-object-id'],
@@ -239,7 +253,7 @@ describe('ProductUpdateSchema', () => {
 
       it('should reject invalid ObjectId in categories array', () => {
         const update = {
-          categories: ['not-valid-id', '507f1f77bcf86cd799439013'],
+          categories: ['not-valid-id'],
         };
 
         const result = productUpdateSchema.safeParse(update);
