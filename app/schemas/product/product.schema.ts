@@ -43,8 +43,8 @@ export const productSchema = z.object({
     .int(PRODUCT_VALIDATION_MESSAGES.DISCOUNT_PRICE.MUST_BE_INTEGER)
     .min(1, PRODUCT_VALIDATION_MESSAGES.DISCOUNT_PRICE.MIN_VALUE)
     .optional(),
-  images: z.array(objectIdSchema).default([]),
-  categories: z.array(objectIdSchema).default([]),
+  images: z.array(objectIdSchema).optional(),
+  categories: z.array(objectIdSchema).optional(),
 });
 
 export const productCreateSchema = productSchema.refine(

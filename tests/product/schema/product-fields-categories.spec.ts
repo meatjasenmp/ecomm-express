@@ -3,15 +3,14 @@ import { productSchema } from '../../../app/schemas/product/product.schema.ts';
 import { productFactories } from '../../factories/product-factory.ts';
 
 describe('productSchema - Categories Field Validation', () => {
-  it('should default to empty array when categories not provided', () => {
+  it('should default to undefined when categories not provided', () => {
     const validProduct = productFactories.minimal();
 
     const result = productSchema.safeParse(validProduct);
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.categories).toEqual([]);
-      expect(Array.isArray(result.data.categories)).toBe(true);
+      expect(result.data.categories).toBeUndefined();
     }
   });
 
@@ -23,8 +22,8 @@ describe('productSchema - Categories Field Validation', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(Array.isArray(result.data.categories)).toBe(true);
-      expect(result.data.categories.length).toBeGreaterThan(0);
-      result.data.categories.forEach((categoryId) => {
+      expect(result.data.categories?.length).toBeGreaterThan(0);
+      result.data.categories?.forEach((categoryId) => {
         expect(typeof categoryId).toBe('string');
         expect(categoryId).toHaveLength(24);
       });

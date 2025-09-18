@@ -3,15 +3,14 @@ import { productSchema } from '../../../app/schemas/product/product.schema.ts';
 import { productFactories } from '../../factories/product-factory.ts';
 
 describe('productSchema - Images Field Validation', () => {
-  it('should default to empty array when images not provided', async () => {
+  it('should default to undefined when images not provided', async () => {
     const validProduct = productFactories.minimal();
 
     const result = productSchema.safeParse(validProduct);
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.images).toEqual([]);
-      expect(Array.isArray(result.data.images)).toBe(true);
+      expect(result.data.images).toBeUndefined();
     }
   });
 
@@ -23,8 +22,8 @@ describe('productSchema - Images Field Validation', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(Array.isArray(result.data.images)).toBe(true);
-      expect(result.data.images.length).toBeGreaterThan(0);
-      result.data.images.forEach((imageId) => {
+      expect(result.data.images?.length).toBeGreaterThan(0);
+      result.data.images?.forEach((imageId) => {
         expect(typeof imageId).toBe('string');
         expect(imageId).toHaveLength(24);
       });

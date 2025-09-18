@@ -17,8 +17,8 @@ describe('ProductCreateSchema', () => {
         expect(result.data.title).toBe(validProduct.title);
         expect(result.data.description).toBe(validProduct.description);
         expect(result.data.price).toBe(validProduct.price);
-        expect(result.data.images).toEqual([]);
-        expect(result.data.categories).toEqual([]);
+        expect(result.data.images).toBeUndefined();
+        expect(result.data.categories).toBeUndefined();
         expect(result.data.discountPrice).toBeUndefined();
       }
     });
